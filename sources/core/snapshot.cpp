@@ -42,7 +42,7 @@ core::DeltaSnapshot::DeltaSnapshot(std::uint32_t prev_snap,
 void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
                                    const core::Snapshot& next_snap)
 {
-    // Checks for deleted objects between two snapshots and delta values
+    // Checks for deleted objects AND delta values between the two snapshots
     auto it = prev_snap._objects.begin();
     while (it != prev_snap._objects.end()) {
         std::uint32_t object_id = it->first;
@@ -65,9 +65,31 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
        }
        it++;
     }
+    // Checks the added objects between the two snapshots
+    it = next_snap._objects.begin();
+    while (it != next_snap._objects.end()) {
+        std::uint32_t  object_id = it->first;
+        GameObject const* next_object = next_snap.get_object(object_id);
+        GameObject const* prev_object = prev_snap.get_object(object_id);
+#ifndef NDEBUG
+        assert(next_object != nullptr);
+#endif
+        if (prev_object == nullptr) {
+            _added_objects[object_id] = next_object;
+        }
+        it++;
+    }
 }
 
 const core::diffmap_t& core::DeltaSnapshot::delta_values()
 {
     return _delta_values;
+}
+const core::object_map_t& core::DeltaSnapshot::deleted_objects()
+{
+    return _deleted_objects;
+}
+const core::object_map_t& core::DeltaSnapshot::added_objects()
+{
+    return _added_objects;
 }

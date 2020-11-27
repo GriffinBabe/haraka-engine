@@ -14,6 +14,8 @@ namespace core {
 typedef std::map<std::uint32_t, std::vector<std::pair<std::string, core::value_t>>>
     diffmap_t;
 
+typedef std::map<std::uint32_t, GameObject const*> object_map_t;
+
 
 /**
  * A snapshot contains all game state information at a giving time.
@@ -69,6 +71,18 @@ public:
      */
     diffmap_t const& delta_values();
 
+    /**
+     * Returns the evaluated list of deleted objects in the newer snapshot.
+     * @return a object_map_t containing the deleted objects.
+     */
+    object_map_t const& deleted_objects();
+
+    /**
+     * Returns the evaluated list of added objects in the newer snapshot.
+     * @return a object_map_t containing the added objects.
+     */
+    object_map_t const& added_objects();
+
 private:
     std::uint32_t _prev_tick = 0;
     std::uint32_t _next_tick = 0;
@@ -76,8 +90,8 @@ private:
     /** The key is the game object id, the Gamevalue is a state change */
     diffmap_t _delta_values;
 
-    std::map<std::uint32_t, GameObject const*> _deleted_objects;
-    std::map<std::uint32_t, GameObject const*> _added_objects;
+    object_map_t _deleted_objects;
+    object_map_t _added_objects;
 };
 
 } // namespace core

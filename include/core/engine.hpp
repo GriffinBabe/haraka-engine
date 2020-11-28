@@ -29,7 +29,6 @@ public:
 
 
 private:
-    SnapshotTimeLine _timeline;
 
     Snapshot _current_snapshot;
     Snapshot _base_snapshot;

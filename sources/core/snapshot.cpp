@@ -5,7 +5,15 @@ core::Snapshot::Snapshot(std::uint32_t tick)
 {
 }
 
-inline std::uint32_t core::Snapshot::tick() const
+core::Snapshot::Snapshot(const core::Snapshot& other)
+    : _tick(other._tick + 1)
+{
+    for (auto& obj : other._objects) {
+        this->_objects[obj.first] = std::unique_ptr<GameObject>(obj.second->clone());
+    }
+}
+
+std::uint32_t core::Snapshot::tick() const
 {
     return _tick;
 }

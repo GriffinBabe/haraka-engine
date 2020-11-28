@@ -27,6 +27,13 @@ class Snapshot {
 public:
     Snapshot(std::uint32_t tick);
 
+    /**
+     * Copy constructor. Will copy all the data in the memory. The tick is by
+     * default incremented by one.
+     * @param other
+     */
+    Snapshot(Snapshot const& other);
+
     std::uint32_t tick() const;
 
     /**

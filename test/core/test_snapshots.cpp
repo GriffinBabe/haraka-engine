@@ -13,6 +13,12 @@ public:
 
     ~DummyObject() = default;
 
+    virtual core::GameObject* clone() override
+    {
+        core::GameObject* obj = new DummyObject(_position.x(), _position.y());
+        return obj;
+    }
+
     core::vec2f_t position()
     {
         return _position;
@@ -36,6 +42,12 @@ public:
 
     ~DummyObject2() = default;
 
+    virtual core::GameObject* clone() override
+    {
+        core::GameObject* obj = new DummyObject2(_health.get_value());
+        return obj;
+    }
+
     core::int_value_t health()
     {
         return _health;
@@ -48,7 +60,6 @@ private:
     }
 
     core::int_value_t _health;
-
 };
 
 TEST_F(SnapshotTest, compare_delta)
@@ -102,7 +113,8 @@ TEST_F(SnapshotTest, compare_delta_2)
     core::Snapshot snap_1(0);
     core::Snapshot snap_2(1);
 
-    std::unique_ptr<core::GameObject> obj_1 = std::make_unique<DummyObject2>(10);
+    std::unique_ptr<core::GameObject> obj_1 =
+        std::make_unique<DummyObject2>(10);
 
     // oof
     std::unique_ptr<core::GameObject> obj_2 = std::make_unique<DummyObject2>(8);
@@ -117,7 +129,8 @@ TEST_F(SnapshotTest, compare_delta_2)
 
     auto& differences_1 = diffmap.at(0);
 
-    auto differences_1_val = differences_1.at(0).second->cast<core::int_value_t>();
+    auto differences_1_val =
+        differences_1.at(0).second->cast<core::int_value_t>();
 
     ASSERT_EQ(differences_1_val->get_value(), -2);
 }
@@ -127,7 +140,8 @@ TEST_F(SnapshotTest, deleted_objects)
     core::Snapshot snap_1(0);
     core::Snapshot snap_2(1);
 
-    std::unique_ptr<core::GameObject> obj_1 = std::make_unique<DummyObject2>(10);
+    std::unique_ptr<core::GameObject> obj_1 =
+        std::make_unique<DummyObject2>(10);
     // Little cheat as obj_1 pointer is set to null once passed in the snapshot.
     auto* obj_1_address = obj_1.get();
 
@@ -148,7 +162,8 @@ TEST_F(SnapshotTest, added_objects)
     core::Snapshot snap_1(0);
     core::Snapshot snap_2(1);
 
-    std::unique_ptr<core::GameObject> obj_1 = std::make_unique<DummyObject2>(10);
+    std::unique_ptr<core::GameObject> obj_1 =
+        std::make_unique<DummyObject2>(10);
     auto* obj_1_address = obj_1.get();
 
     snap_2.add_object(0, obj_1);
@@ -161,4 +176,44 @@ TEST_F(SnapshotTest, added_objects)
     auto const* added_obj = added_objects.at(0);
 
     ASSERT_EQ(added_obj, obj_1_address);
+}
+
+TEST_F(SnapshotTest, snapshot_deep_copy)
+{
+    core::Snapshot snap_1(0);
+
+    std::unique_ptr<core::GameObject> obj_1 =
+        std::make_unique<DummyObject2>(10);
+    std::unique_ptr<core::GameObject> obj_2 =
+        std::make_unique<DummyObject>(0.5f, 0.5f);
+    snap_1.add_object(0, obj_1);
+    snap_1.add_object(1, obj_2);
+
+    core::Snapshot snap_2(snap_1);
+
+    ASSERT_EQ(snap_2.tick(), 1);
+
+    auto const* snap_1_obj_1 = snap_1.get_object(0);
+    auto const* snap_1_obj_2 = snap_1.get_object(1);
+
+    auto const* snap_2_obj_1 = snap_2.get_object(0);
+    auto const* snap_2_obj_2 = snap_2.get_object(1);
+
+    ASSERT_NE(snap_1_obj_1, snap_2_obj_1);
+    ASSERT_NE(snap_1_obj_2, snap_2_obj_2);
+
+    ASSERT_EQ(snap_1_obj_1->get_value("health")
+                  ->cst_cast<core::int_value_t>()
+                  ->get_value(),
+              snap_2_obj_1->get_value("health")
+                  ->cst_cast<core::int_value_t>()
+                  ->get_value());
+
+    ASSERT_EQ(
+        snap_1_obj_2->get_value("position")->cst_cast<core::vec2f_t>()->x(),
+        snap_2_obj_2->get_value("position")->cst_cast<core::vec2f_t>()->x());
+
+    ASSERT_EQ(
+        snap_1_obj_2->get_value("position")->cst_cast<core::vec2f_t>()->y(),
+        snap_2_obj_2->get_value("position")->cst_cast<core::vec2f_t>()->y());
 }

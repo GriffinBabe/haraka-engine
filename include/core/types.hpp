@@ -62,6 +62,23 @@ public:
         return ptr;
     }
 
+    /**
+     * Same as cast<T>() but returns a const pointer to it.
+     * @tparam T
+     * @return
+     */
+    template <typename T,
+        typename = typename std::enable_if<
+            std::is_base_of<GameValue, T>::value>::type>
+    T const* cst_cast() const
+    {
+        auto ptr = dynamic_cast<T const*>(this);
+#ifndef NDEBUG
+        assert(ptr != nullptr);
+#endif
+        return ptr;
+    }
+
 protected:
 private:
 };

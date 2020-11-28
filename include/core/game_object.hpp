@@ -22,6 +22,8 @@ public:
 
     virtual ~GameObject() = default;
 
+    virtual GameObject* clone() = 0;
+
     /**
      * Iterates over all the mapped GameValues and get the delta values by
      * comparing with the other GameObject. Returns a list of those delta values

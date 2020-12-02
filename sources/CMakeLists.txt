@@ -10,6 +10,7 @@ add_library(
         net/tsdeque.cpp
         net/session.cpp
         net/packet.cpp
+        net/client.cpp
 )
 
 target_link_libraries(network PUBLIC ${Boost_LIBRARIES})

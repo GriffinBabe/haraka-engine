@@ -20,7 +20,14 @@ else()
     message(FATAL_ERROR "Couldn't find boost")
 endif()
 
+find_package(Protobuf)
+if (${Protobuf_FOUND})
+else()
+    message(FATAL_ERROR "Couldn't find protobuf")
+endif()
+
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(include)
 
 add_subdirectory(sources)

@@ -45,7 +45,7 @@ public:
     }
 
     /**
-     * Same as cast<T>(), but by returning an std::shared_ptr()
+     * Same as cast<EnumType>(), but by returning an std::shared_ptr()
      * class.
      * @tparam T
      * @return the dynamically casted GameValue.
@@ -63,7 +63,7 @@ public:
     }
 
     /**
-     * Same as cast<T>() but returns a const pointer to it.
+     * Same as cast<EnumType>() but returns a const pointer to it.
      * @tparam T
      * @return
      */

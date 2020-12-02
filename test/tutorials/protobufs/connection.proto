@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package tutorial;
+
+message Connection {
+	required string username = 1;
+	optional string password = 2;
+	optional int32 instance = 3;
+}

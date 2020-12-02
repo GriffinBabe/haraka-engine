@@ -13,6 +13,14 @@ add_executable(
 target_link_libraries(tutorials_asio PUBLIC ${Boost_LIBRARIES})
 
 add_executable(
+        tutorials_protobuf
+        tutorials/google_protobufs.cpp
+        tutorials/protobufs/connection.pb.cc
+)
+
+target_link_libraries(tutorials_protobuf PUBLIC ${Protobuf_LIBRARIES})
+
+add_executable(
         test_server
         net/test_server.cpp
 )

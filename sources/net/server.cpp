@@ -2,17 +2,18 @@
 #include <iostream>
 #include <thread>
 
-Server::Server()
+net::ServerInterface::ServerInterface()
 {
     _service = std::make_shared<boost::asio::io_service>();
     _work = std::make_shared<boost::asio::io_service::work>(*_service);
 }
 
-Server::~Server()
+net::ServerInterface::~ServerInterface()
 {
 }
 
-void Server::worker_thread(std::shared_ptr<boost::asio::io_service> service)
+void net::ServerInterface::worker_thread(
+    std::shared_ptr<boost::asio::io_service> service)
 {
     std::cout << "[" << std::this_thread::get_id()
               << "] Started working thread." << std::endl;
@@ -34,14 +35,14 @@ void Server::worker_thread(std::shared_ptr<boost::asio::io_service> service)
     }
 }
 
-bool Server::start_threads(std::uint16_t thread_count)
+bool net::ServerInterface::start_threads(std::uint16_t thread_count)
 {
     std::vector<std::thread> threads;
     threads.reserve(thread_count);
 
     for (std::uint16_t i = 0; i < thread_count; i++) {
         threads.emplace_back(
-            std::thread(&Server::worker_thread, this, _service));
+            std::thread(&ServerInterface::worker_thread, this, _service));
     }
 
     for (std::uint16_t i = 0; i < thread_count; i++) {

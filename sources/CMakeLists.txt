@@ -7,6 +7,9 @@ add_library(core SHARED
 add_library(
         network SHARED
         net/server.cpp
+        net/tsdeque.cpp
+        net/session.cpp
+        net/packet.cpp
 )
 
-target_link_libraries(network PUBLIC ${Boost_LIBRARIES} core)
+target_link_libraries(network PUBLIC ${Boost_LIBRARIES})

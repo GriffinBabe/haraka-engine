@@ -1,7 +1,14 @@
 #include <vector>
+#include "net/session.hpp"
 
 namespace net
 {
+
+/**
+ * Forward declare the class.
+ */
+template <typename EnumType>
+class Session;
 
 template <typename EnumType>
 struct PacketHeader {
@@ -23,6 +30,13 @@ struct Packet {
     size_t size() {
         return body.size();
     }
+};
+
+template <typename EnumType>
+struct OwnedPacket {
+
+    Packet<EnumType> packet;
+    std::shared_ptr<net::Session<EnumType>> remote = nullptr;
 };
 
 }

@@ -214,7 +214,7 @@ private:
     /**
      * Queue of user sessions.
      */
-    std::deque<std::shared_ptr<net::TCPSession<EnumType>>> _sessions;
+    std::deque<std::shared_ptr<net::Session<EnumType>>> _sessions;
 
     /**
      * Client counter.

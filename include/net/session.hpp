@@ -190,6 +190,11 @@ public:
 
 private:
 
+    /**
+     * Overrides the shared_from_this of the base function by adding a dynamic
+     * pointer cast.
+     * @return a shared_ptr down-casted to TCPSession.
+     */
     std::shared_ptr<TCPSession<EnumType>> shared_from_this()
     {
         return std::dynamic_pointer_cast<TCPSession<EnumType>>(

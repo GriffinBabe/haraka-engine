@@ -8,13 +8,13 @@
 namespace net {
 
 typedef boost::asio::ip::tcp::socket tcp_socket_t;
-typedef boost::asio::ip::udp::socket udp_socket_t;
 typedef boost::asio::io_context context_t;
 
 /**
- * Socket's protocol type.
+ * Enumeration of the owner type (Server if used by the server, Client if by
+ * the client)
  */
-enum SocketType : std::uint8_t { TCP = 0, UDP };
+enum OwnerType : std::uint8_t { SERVER, CLIENT };
 
 /**
  * Session is the main responsible to read packets and send packet from queues.
@@ -29,30 +29,12 @@ enum SocketType : std::uint8_t { TCP = 0, UDP };
 template <typename EnumType>
 class Session : public std::enable_shared_from_this<net::Session<EnumType>> {
 public:
-    /**
-     * Enumeration of the owner type (Server if used by the server, Client if by
-     * the client)
-     */
-    enum OwnerType : std::uint8_t { SERVER, CLIENT };
 
     Session(tcp_socket_t socket,
             context_t& context,
             net::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
             OwnerType owner_type)
-        : _type(TCP),
-          _socket(std::move(socket)),
-          _context(context),
-          _owner(owner_type),
-          _input_queue(in_queue)
-    {
-    }
-
-    Session(udp_socket_t socket,
-            context_t& context,
-            net::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
-            OwnerType owner_type)
-        : _type(UDP),
-          _socket(std::move(socket)),
+        : _socket(std::move(socket)),
           _context(context),
           _owner(owner_type),
           _input_queue(in_queue)
@@ -119,13 +101,7 @@ public:
      */
     bool is_connected()
     {
-        if (_type == TCP) {
-            return std::get<tcp_socket_t>(_socket).is_open();
-        }
-        else if (_type == UDP) {
-            return std::get<udp_socket_t>(_socket).is_open();
-        }
-        return false;
+        return _socket.is_open();
     }
 
     /**
@@ -134,9 +110,7 @@ public:
     void disconnect()
     {
         if (is_connected()) {
-            _context.post([this]() {
-                close_socket();
-            });
+            _context.post([this]() { close_socket(); });
         }
     }
 
@@ -145,15 +119,7 @@ public:
      */
     bool is_tcp()
     {
-        return _type == TCP;
-    }
-
-    /**
-     * Returns true if this session's protocol is UDP
-     */
-    bool is_udp()
-    {
-        return _type == UDP;
+        return true;
     }
 
     std::uint32_t id()
@@ -172,8 +138,8 @@ private:
     {
         boost::asio::async_write(
             _socket,
-            boost::asio::buffer(_output_queue.front().header,
-                                sizeof(net::Packet<EnumType>)),
+            boost::asio::buffer(&_output_queue.front().header,
+                                sizeof(net::PacketHeader<EnumType>)),
             [this](std::error_code ec, size_t wrote) {
                 if (!ec) {
                     if (_output_queue.front().body.size() > 0) {
@@ -244,14 +210,15 @@ private:
                     else {
                         // length <= 0 means that the packet is header only
                         // we proceed
+                        add_packet_to_input_queue();
                     }
                 }
                 else {
                     std::cout << "[Session " << _id
                               << "] Read header failed: " << ec.message()
                               << "\n";
+                    close_socket();
                 }
-                close_socket();
             });
     }
 
@@ -282,12 +249,7 @@ private:
      */
     void close_socket()
     {
-        if (_type == TCP) {
-            std::get<tcp_socket_t>(_socket).close();
-        }
-        else if (_type == UDP) {
-            std::get<udp_socket_t>(_socket).close();
-        }
+        _socket.close();
     }
 
     /**
@@ -313,7 +275,7 @@ private:
     /**
      * The used socket.
      */
-    std::variant<tcp_socket_t, udp_socket_t> _socket;
+    tcp_socket_t _socket;
 
     /**
      * Reference to the context.
@@ -329,11 +291,6 @@ private:
      * Session's output queue. (Message to send are put to the queue).
      */
     net::ThreadSafeDeque<net::Packet<EnumType>> _output_queue;
-
-    /**
-     * The protocol type of the socket.
-     */
-    SocketType _type = TCP;
 
     /**
      * The owner type (server/client)

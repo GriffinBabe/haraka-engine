@@ -1,5 +1,5 @@
+#pragma once
 #include <vector>
-#include "net/session.hpp"
 
 namespace net
 {
@@ -35,8 +35,8 @@ struct Packet {
 template <typename EnumType>
 struct OwnedPacket {
 
-    Packet<EnumType> packet;
     std::shared_ptr<net::Session<EnumType>> remote = nullptr;
+    Packet<EnumType> packet;
 };
 
 }

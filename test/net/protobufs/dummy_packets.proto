@@ -1,0 +1,28 @@
+syntax = "proto2";
+
+package net;
+
+message Connection {
+	required string username = 1;
+	optional string password = 2;
+	optional int32 instance = 3;
+}
+
+message Disconnection {
+	optional string reason = 1;
+}
+
+message Ping {
+	optional int32 time = 1;
+}
+
+message ConnectionResponse {
+	enum Status {
+		ACCEPTED = 0;
+		WRONG_PASSWORD = 1;
+		ALREADY_LOGGED = 2;
+		DECLINED = 3;
+	}
+
+	required Status status = 1;
+}

@@ -23,9 +23,10 @@ target_link_libraries(tutorials_protobuf PUBLIC ${Protobuf_LIBRARIES})
 add_executable(
         test_server
         net/test_server.cpp
+        net/protobufs/dummy_packets.pb.cc
 )
 
-target_link_libraries(test_server PUBLIC network GTest::Main)
+target_link_libraries(test_server PUBLIC network GTest::Main ${Protobuf_LIBRARIES})
 
 add_executable(
         test_types

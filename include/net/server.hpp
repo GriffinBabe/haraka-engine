@@ -15,7 +15,6 @@ namespace net {
 template <typename EnumType>
 class ServerInterface {
 public:
-
     ServerInterface(std::uint16_t port)
         : _acceptor(
             _context,
@@ -64,27 +63,26 @@ public:
 
     /**
      * Waits for a new connection, then calls the connect_to_client() method.
-     * If connect_to_client() return true, then the client is added to the session
-     * queue and calls the connect_to_client() method.
+     * If connect_to_client() return true, then the client is added to the
+     * session queue and calls the connect_to_client() method.
      */
     void wait_for_new_connection()
     {
         _acceptor.async_accept([this](std::error_code ec,
                                       boost::asio::ip::tcp::socket socket) {
             if (!ec) {
-                auto session = std::make_shared<net::Session<EnumType>>(
-                    net::SocketType::TCP,
-                    std::move(socket),
-                    _context,
-                    net::Session<EnumType>::OwnerType::SERVER,
-                    _input_queue);
+                auto session =
+                    std::make_shared<Session<EnumType>>(std::move(socket),
+                                                        _context,
+                                                        _input_queue,
+                                                        OwnerType::SERVER);
 
                 if (on_client_connect(session)) {
                     _sessions.push_back(std::move(session));
-                    _sessions.back().connect_to_client(_client_id_counter++);
+                    _sessions.back()->connect_to_client(_client_id_counter++);
 
                     std::cout << "[Server] Connection approved with client: "
-                              << _sessions.back().id() << "\n";
+                              << _sessions.back()->id() << "\n";
                 }
                 else {
                     std::cout << "[Server] Connection denied.\n";
@@ -132,7 +130,7 @@ public:
         for (auto& client : _sessions) {
             if (client && client->is_connected()) {
                 if (client != exclude) {
-                    client->send(msg);
+                    client->send_packet(msg);
                 }
             }
             else {
@@ -166,7 +164,7 @@ public:
 
         while (message_count < max_messages && !_input_queue.empty()) {
             auto msg = _input_queue.pop_front();
-            on_message(msg);
+            on_message(msg.remote, msg.packet);
             message_count++;
         }
     }
@@ -211,7 +209,7 @@ private:
     /**
      * Thread safe queue of all the received packets to handle.
      */
-    net::ThreadSafeDeque<net::Packet<EnumType>> _input_queue;
+    net::ThreadSafeDeque<net::OwnedPacket<EnumType>> _input_queue;
 
     /**
      * Queue of user sessions.

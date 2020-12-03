@@ -72,7 +72,7 @@ public:
                                       boost::asio::ip::tcp::socket socket) {
             if (!ec) {
                 auto session =
-                    std::make_shared<Session<EnumType>>(std::move(socket),
+                    std::make_shared<TCPSession<EnumType>>(std::move(socket),
                                                         _context,
                                                         _input_queue,
                                                         OwnerType::SERVER);
@@ -100,7 +100,7 @@ public:
      * Sends a message to the client, removes it from the queue if it is
      * disconnected.
      */
-    void message_client(std::shared_ptr<net::Session<EnumType>> client,
+    void message_client(std::shared_ptr<net::TCPSession<EnumType>> client,
                         net::Packet<EnumType> const& packet)
     {
         if (client && client->is_connected()) {
@@ -121,7 +121,7 @@ public:
      */
     void message_all_clients(
         net::Packet<EnumType> const& msg,
-        std::shared_ptr<net::Session<EnumType>> exclude = nullptr)
+        std::shared_ptr<net::TCPSession<EnumType>> exclude = nullptr)
     {
         bool invalid_session_exits = false;
         // do the same as in message_client but erases the client only AFTER
@@ -175,19 +175,19 @@ protected:
      * @param client, pointer to the client's session.
      */
     virtual bool
-    on_client_connect(std::shared_ptr<net::Session<EnumType>> client) = 0;
+    on_client_connect(std::shared_ptr<net::TCPSession<EnumType>> client) = 0;
 
     /**
      * Called upon a client disconnection. Must be overridden.
      * @param client, pointer to the client's session.
      */
     virtual void
-    on_client_disconnect(std::shared_ptr<net::Session<EnumType>> client) = 0;
+    on_client_disconnect(std::shared_ptr<net::TCPSession<EnumType>> client) = 0;
 
     /**
      * Called when receiving a packet from a client.
      */
-    virtual void on_message(std::shared_ptr<net::Session<EnumType>> client,
+    virtual void on_message(std::shared_ptr<net::TCPSession<EnumType>> client,
                             net::Packet<EnumType> packet) = 0;
 
 private:
@@ -214,7 +214,7 @@ private:
     /**
      * Queue of user sessions.
      */
-    std::deque<std::shared_ptr<net::Session<EnumType>>> _sessions;
+    std::deque<std::shared_ptr<net::TCPSession<EnumType>>> _sessions;
 
     /**
      * Client counter.

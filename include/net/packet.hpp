@@ -8,7 +8,7 @@ namespace net
  * Forward declare the class.
  */
 template <typename EnumType>
-class Session;
+class TCPSession;
 
 template <typename EnumType>
 struct PacketHeader {
@@ -35,7 +35,7 @@ struct Packet {
 template <typename EnumType>
 struct OwnedPacket {
 
-    std::shared_ptr<net::Session<EnumType>> remote = nullptr;
+    std::shared_ptr<net::TCPSession<EnumType>> remote = nullptr;
     Packet<EnumType> packet;
 };
 

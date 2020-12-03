@@ -21,7 +21,7 @@ public:
             boost::asio::ip::tcp::resolver::results_type endpoints =
                 resolver.resolve(host, std::to_string(port));
 
-            _session = std::make_unique<net::Session<EnumType>>(
+            _session = std::make_unique<net::TCPSession<EnumType>>(
                 std::move(boost::asio::ip::tcp::socket(_context)),
                 _context,
                 _input_queue,
@@ -75,7 +75,7 @@ public:
 protected:
     boost::asio::io_context _context;
     std::thread _context_thread;
-    std::unique_ptr<net::Session<EnumType>> _session = nullptr;
+    std::unique_ptr<net::TCPSession<EnumType>> _session = nullptr;
 
 private:
     net::ThreadSafeDeque<net::OwnedPacket<EnumType>> _input_queue;

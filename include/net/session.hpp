@@ -17,27 +17,21 @@ typedef boost::asio::io_context context_t;
 enum OwnerType : std::uint8_t { SERVER, CLIENT };
 
 /**
- * Session is the main responsible to read packets and send packet from queues.
- * It is used by the server as it used for the client.
+ * Session is the main responsible to read packets and send packet from
+ * queues. It is used by the server as it used by the client.
  *
- * The session supports both the UDP and the TCP protocols, the server creates
- * a session for each for each connected client, as the engine uses both
- * protocols.
+ * This class is needs to be implemented for both the TCP and UDP protocols.
  *
  * @tparam EnumType, the enumeration of all the possible packets.
  */
+
 template <typename EnumType>
 class Session : public std::enable_shared_from_this<net::Session<EnumType>> {
 public:
-
-    Session(tcp_socket_t socket,
-            context_t& context,
+    Session(context_t& context,
             net::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
             OwnerType owner_type)
-        : _socket(std::move(socket)),
-          _context(context),
-          _owner(owner_type),
-          _input_queue(in_queue)
+        : _context(context), _input_queue(in_queue), _owner(owner_type)
     {
     }
 
@@ -45,9 +39,92 @@ public:
      * Adds a packet to the output queue and starts the asynchronous operation
      * of sending the messages if needed.
      */
-    void send_packet(const net::Packet<EnumType>& packet)
+    virtual void send_packet(const net::Packet<EnumType>& packet) = 0;
+
+    /**
+     * Checks if the socket is open and starts read the headers.
+     * @param id, the id of this session.
+     */
+    virtual void connect_to_client(std::uint32_t id) = 0;
+
+    /**
+     * Connects to tge server asynchronously and starts to read the packets.
+     */
+    virtual void connect_to_server(
+        boost::asio::ip::tcp::resolver::results_type const& endpoint) = 0;
+
+    /**
+     * Returns true if the socket is open, false otherwhise.
+     */
+    virtual bool is_connected() = 0;
+
+    /**
+     * Adds the disconnect order to the context queue.
+     */
+    virtual void disconnect() = 0;
+
+    /**
+     * Returns true if this session's protocol is TCP
+     */
+    virtual bool is_tcp() = 0;
+
+    /**
+     * Returns true if this session's protocol is UDP
+     */
+    virtual bool is_udp() = 0;
+
+    std::uint32_t id()
     {
-        _context.post([this, packet] {
+        return _id;
+    }
+
+protected:
+    std::uint32_t _id = 0;
+
+    OwnerType _owner = SERVER;
+
+    /**
+     * Reference to the input queue. (Received messages are put to the queue).
+     */
+    net::ThreadSafeDeque<net::OwnedPacket<EnumType>>& _input_queue;
+
+    /**
+     * TCPSession's output queue. (Message to send are put to the queue).
+     */
+    net::ThreadSafeDeque<net::Packet<EnumType>> _output_queue;
+
+    /**
+     * Temporary packet used in the read_header(), read_body() and
+     * add_packet_to_input_queue() methods.
+     */
+    net::Packet<EnumType> _temp_packet;
+
+    /**
+     * Reference to the context.
+     */
+    boost::asio::io_context& _context;
+
+private:
+};
+
+/**
+ * This class is the implementation of the session for the TCP protocol.
+ */
+template <typename EnumType>
+class TCPSession : public Session<EnumType> {
+public:
+    TCPSession(tcp_socket_t socket,
+               context_t& context,
+               net::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
+               OwnerType owner_type)
+        : Session<EnumType>(context, in_queue, owner_type),
+          _socket(std::move(socket))
+    {
+    }
+
+    void send_packet(const net::Packet<EnumType>& packet) override
+    {
+        this->_context.post([this, packet] {
             // If the queue is not empty, we assume that
             // we are already asynchronously writing to the network, and adding
             // a new packet to the queue will be processed after the current
@@ -55,35 +132,28 @@ public:
 
             // If the queue is empty, then this means that the async writing
             // process already finished and need to be relaunched.
-            bool writing_message = !_output_queue.empty();
-            _output_queue.push_back(packet);
+            bool writing_message = !this->_output_queue.empty();
+            this->_output_queue.push_back(packet);
             if (!writing_message) {
                 write_header();
             }
         });
     }
 
-    /**
-     * Checks if the socket is open and starts read the headers.
-     * @param id, the id of this session.
-     */
-    void connect_to_client(std::uint32_t id)
+    void connect_to_client(std::uint32_t id) override
     {
-        if (_owner == SERVER) {
+        if (this->_owner == SERVER) {
             if (is_connected()) {
-                _id = id;
+                this->_id = id;
                 read_header();
             }
         }
     }
 
-    /**
-     * Connects to tge server asynchronously and starts to read the packets.
-     */
     void connect_to_server(
-        boost::asio::ip::tcp::resolver::results_type const& endpoint)
+        boost::asio::ip::tcp::resolver::results_type const& endpoint) override
     {
-        if (_owner == CLIENT) {
+        if (this->_owner == CLIENT) {
             boost::asio::async_connect(
                 _socket,
                 endpoint,
@@ -96,38 +166,36 @@ public:
         }
     }
 
-    /**
-     * Returns true if the socket is open, false otherwhise.
-     */
-    bool is_connected()
+    bool is_connected() override
     {
         return _socket.is_open();
     }
 
-    /**
-     * Adds the disconnect order to the context queue.
-     */
-    void disconnect()
+    void disconnect() override
     {
         if (is_connected()) {
-            _context.post([this]() { close_socket(); });
+            this->_context.post([this]() { close_socket(); });
         }
     }
 
-    /**
-     * Returns true if this session's protocol is TCP
-     */
-    bool is_tcp()
+    bool is_tcp() override
     {
         return true;
     }
 
-    std::uint32_t id()
+    bool is_udp() override
     {
-        return _id;
+        return false;
     }
 
 private:
+
+    std::shared_ptr<TCPSession<EnumType>> shared_from_this()
+    {
+        return std::dynamic_pointer_cast<TCPSession<EnumType>>(
+            net::Session<EnumType>::shared_from_this());
+    }
+
     /**
      * Writes the output queue's front packet's header. If necessary, calls the
      * write_body() method. If not necessary then pops it from the output queue,
@@ -138,22 +206,22 @@ private:
     {
         boost::asio::async_write(
             _socket,
-            boost::asio::buffer(&_output_queue.front().header,
+            boost::asio::buffer(&this->_output_queue.front().header,
                                 sizeof(net::PacketHeader<EnumType>)),
             [this](std::error_code ec, size_t wrote) {
                 if (!ec) {
-                    if (_output_queue.front().body.size() > 0) {
+                    if (this->_output_queue.front().body.size() > 0) {
                         write_body();
                     }
                     else {
-                        _output_queue.pop_front();
-                        if (!_output_queue.empty()) {
+                        this->_output_queue.pop_front();
+                        if (!this->_output_queue.empty()) {
                             write_header();
                         }
                     }
                 }
                 else {
-                    std::cerr << "[Session " << _id
+                    std::cerr << "[TCPSession " << this->_id
                               << "] Write header failed: " << ec.message()
                               << "\n";
                     close_socket();
@@ -170,17 +238,17 @@ private:
     {
         boost::asio::async_write(
             _socket,
-            boost::asio::buffer(_output_queue.front().body.data(),
-                                _output_queue.front().body.size()),
+            boost::asio::buffer(this->_output_queue.front().body.data(),
+                                this->_output_queue.front().body.size()),
             [this](std::error_code ec, size_t length) {
                 if (!ec) {
-                    _output_queue.pop_front();
-                    if (!_output_queue.empty()) {
+                    this->_output_queue.pop_front();
+                    if (!this->_output_queue.empty()) {
                         write_header();
                     }
                 }
                 else {
-                    std::cerr << "[Session " << _id
+                    std::cerr << "[TCPSession " << this->_id
                               << "] Write body failed: " << ec.message()
                               << "\n";
                     close_socket();
@@ -197,14 +265,15 @@ private:
         // this shouldn't compile
         boost::asio::async_read(
             _socket,
-            boost::asio::buffer(&_temp_packet.header,
+            boost::asio::buffer(&this->_temp_packet.header,
                                 sizeof(PacketHeader<EnumType>)),
             [this](std::error_code ec, size_t length) {
                 if (!ec) {
                     if (length > 0) {
                         // Now that we have the size we resize the array of our
                         // packet and proceed to read the body
-                        _temp_packet.body.resize(_temp_packet.header.size);
+                        this->_temp_packet.body.resize(
+                            this->_temp_packet.header.size);
                         read_body();
                     }
                     else {
@@ -214,7 +283,7 @@ private:
                     }
                 }
                 else {
-                    std::cout << "[Session " << _id
+                    std::cout << "[TCPSession " << this->_id
                               << "] Read header failed: " << ec.message()
                               << "\n";
                     close_socket();
@@ -228,20 +297,20 @@ private:
      */
     void read_body()
     {
-        boost::asio::async_read(_socket,
-                                boost::asio::buffer(_temp_packet.body.data(),
-                                                    _temp_packet.body.size()),
-                                [this](std::error_code ec, size_t length) {
-                                    if (!ec) {
-                                        add_packet_to_input_queue();
-                                    }
-                                    else {
-                                        std::cerr << "[Session " << _id
-                                                  << "] Read body failed: "
-                                                  << ec.message() << "\n";
-                                        close_socket();
-                                    }
-                                });
+        boost::asio::async_read(
+            _socket,
+            boost::asio::buffer(this->_temp_packet.body.data(),
+                                this->_temp_packet.body.size()),
+            [this](std::error_code ec, size_t length) {
+                if (!ec) {
+                    add_packet_to_input_queue();
+                }
+                else {
+                    std::cerr << "[TCPSession " << this->_id
+                              << "] Read body failed: " << ec.message() << "\n";
+                    close_socket();
+                }
+            });
     }
 
     /**
@@ -257,49 +326,19 @@ private:
      */
     void add_packet_to_input_queue()
     {
-        if (_owner == SERVER) {
-            _input_queue.push_back({this->shared_from_this(), _temp_packet});
+        if (this->_owner == SERVER) {
+            this->_input_queue.push_back(
+                {shared_from_this(), this->_temp_packet});
         }
         else {
-            _input_queue.push_back({nullptr, _temp_packet});
+            this->_input_queue.push_back({nullptr, this->_temp_packet});
         }
         read_header();
     }
 
     /**
-     * Temporary packet used in the read_header(), read_body() and
-     * add_packet_to_input_queue() methods.
-     */
-    net::Packet<EnumType> _temp_packet;
-
-    /**
      * The used socket.
      */
     tcp_socket_t _socket;
-
-    /**
-     * Reference to the context.
-     */
-    boost::asio::io_context& _context;
-
-    /**
-     * Reference to the input queue. (Received messages are put to the queue).
-     */
-    net::ThreadSafeDeque<net::OwnedPacket<EnumType>>& _input_queue;
-
-    /**
-     * Session's output queue. (Message to send are put to the queue).
-     */
-    net::ThreadSafeDeque<net::Packet<EnumType>> _output_queue;
-
-    /**
-     * The owner type (server/client)
-     */
-    OwnerType _owner = SERVER;
-
-    /**
-     * The ID of the session.
-     */
-    std::uint32_t _id = 0;
 };
 } // namespace net

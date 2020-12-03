@@ -31,19 +31,19 @@ public:
 
 protected:
     bool on_client_connect(
-        std::shared_ptr<net::Session<DummyPackets>> client) override
+        std::shared_ptr<net::TCPSession<DummyPackets>> client) override
     {
         std::cout << "[Server] On client connect called. \n";
         return true;
     }
 
     void on_client_disconnect(
-        std::shared_ptr<net::Session<DummyPackets>> client) override
+        std::shared_ptr<net::TCPSession<DummyPackets>> client) override
     {
         std::cout << "[Server] On client disconnected called. \n";
     }
 
-    void on_message(std::shared_ptr<net::Session<DummyPackets>> client,
+    void on_message(std::shared_ptr<net::TCPSession<DummyPackets>> client,
                     net::Packet<DummyPackets> packet) override
     {
         std::cout << "[Server] Packet received with packed id:  "

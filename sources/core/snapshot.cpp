@@ -1,4 +1,5 @@
 #include "core/snapshot.hpp"
+#include <cassert>
 
 core::Snapshot::Snapshot(std::uint32_t tick)
     : _tick(tick)

@@ -1,4 +1,5 @@
 #include "core/game_object.hpp"
+#include <cassert>
 
 inline bool core::GameObject::is_networked()
 {

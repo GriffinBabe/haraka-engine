@@ -5,6 +5,10 @@ project(haraka_engine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED  True)
 
+# Enable threads
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # For windows MSVC runtime
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
@@ -28,6 +32,8 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${Protobuf_INCLUDE_DIRS})
+message(${Protobuf_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(include)
 
 add_subdirectory(sources)

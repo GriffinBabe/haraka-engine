@@ -3,14 +3,14 @@ add_executable(
         tutorials/boost_asio_core.cpp
 )
 
-target_link_libraries(tutorials_asio PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(tutorials_asio PUBLIC ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(
         tutorials_asio_tcp
         tutorials/boost_asio_tcp.cpp
 )
 
-target_link_libraries(tutorials_asio PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(tutorials_asio_tcp PUBLIC ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(
         tutorials_protobuf
@@ -26,7 +26,8 @@ add_executable(
         net/protobufs/dummy_packets.pb.cc
 )
 
-target_link_libraries(test_server PUBLIC network GTest::Main ${Protobuf_LIBRARIES})
+target_link_libraries(test_server PUBLIC network GTest::Main protobuf ${Protobuf_LIBRARIES} Threads::Threads)
+
 
 add_executable(
         test_types

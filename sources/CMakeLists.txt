@@ -13,4 +13,4 @@ add_library(
         net/client.cpp
 )
 
-target_link_libraries(network PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(network PUBLIC ${Boost_LIBRARIES} Threads::Threads)

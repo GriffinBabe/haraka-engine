@@ -1,5 +1,5 @@
 #pragma once
-#include "core/game_object.hpp"
+#include "core/game_object_snapshot.hpp"
 #include <map>
 
 namespace core {
@@ -11,17 +11,16 @@ namespace core {
  * std::string is the name of the variables
  * core::value_t is the delta difference.
  */
-typedef std::map<std::uint32_t, std::vector<std::pair<std::string, core::value_t>>>
+typedef std::map<std::uint32_t,
+                 std::vector<std::pair<std::string, core::value_t>>>
     diffmap_t;
 
 typedef std::map<std::uint32_t, GameObject const*> object_map_t;
-
 
 /**
  * A snapshot contains all game state information at a giving time.
  */
 class Snapshot {
-
     friend class DeltaSnapshot;
 
 public:
@@ -51,7 +50,6 @@ public:
     GameObject const* get_object(std::uint32_t id) const;
 
 private:
-
     std::map<std::uint32_t, std::unique_ptr<GameObject>> _objects;
 
     std::uint32_t _tick;
@@ -63,7 +61,6 @@ private:
  */
 class DeltaSnapshot {
 public:
-
     DeltaSnapshot(std::uint32_t prev_tick, std::uint32_t next_tick);
 
     /**

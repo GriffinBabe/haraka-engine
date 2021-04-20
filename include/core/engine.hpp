@@ -22,14 +22,11 @@ public:
      * Updates the physics, changing the current snapshot
      * @return
      */
-     bool update_physics();
+    bool update_physics();
 
-     std::shared_ptr<DeltaSnapshot> get_delta_snapshot();
-
-
+    std::shared_ptr<DeltaSnapshot> get_delta_snapshot();
 
 private:
-
     Snapshot _current_snapshot;
     Snapshot _base_snapshot;
 };

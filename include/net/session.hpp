@@ -189,7 +189,6 @@ public:
     }
 
 private:
-
     /**
      * Overrides the shared_from_this of the base function by adding a dynamic
      * pointer cast.

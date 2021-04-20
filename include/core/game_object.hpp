@@ -1,54 +1,28 @@
 #pragma once
-#include "core/types.hpp"
-#include <map>
-#include <string>
+#include <cinttypes>
 #include <memory>
-#include <vector>
 
-namespace core {
-
-/**
- * Set of differences between two similar objects. The std::string is the name
- * while the std::shared_ptr<GameValue> (core::value_t) is the delta value.
- */
-typedef std::vector<std::pair<std::string, core::value_t>> diffset_t;
-
-/**
- * Abstract class that consist of all entities and attributes.
- */
-class GameObject {
+namespace core
+{
+class GameObject : std::enable_shared_from_this<GameObject>
+{
 public:
-    GameObject() = default;
+    GameObject(std::uint32_t id);
 
     virtual ~GameObject() = default;
 
-    virtual GameObject* clone() = 0;
+    virtual void on_turn_begin() = 0;
 
-    /**
-     * Iterates over all the mapped GameValues and get the delta values by
-     * comparing with the other GameObject. Returns a list of those delta values
-     * with the corresponding variable name.
-     *
-     * @param other, the other object to compare with.
-     * @return a list of delta values.
-     */
-    diffset_t compare(GameObject const* other) const;
+    virtual void on_turn_end() = 0;
 
-    [[nodiscard]] bool is_networked();
+    [[nodiscard]] inline std::uint32_t id() const;
 
-    [[nodiscard]] GameValue const* get_value(std::string const& name) const;
-
-protected:
-
-    /**
-     * Adds a pointer to the _values map for each member value.
-     * ALWAYS CALL IT IN THE SUBCLASS CONSTRUCTORS
-     */
-    virtual void add_values() = 0;
-
-    bool _networked = false;
-
-    std::map<std::string, GameValue*> _values;
+private:
+    std::uint32_t _id;
 };
+}
 
-} // namespace core
+std::uint32_t core::GameObject::id() const
+{
+    return _id;
+}

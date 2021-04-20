@@ -1,8 +1,13 @@
 add_library(core SHARED
-        core/types.cpp
-        core/snapshot.cpp
         core/game_object.cpp
-)
+        core/gameinstance.cpp
+        core/world.cpp
+        core/exception.cpp
+        core/action.cpp
+        core/teams.cpp
+        core/player.cpp
+        core/types.cpp
+        )
 
 add_library(
         network SHARED

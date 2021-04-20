@@ -73,9 +73,9 @@ public:
             if (!ec) {
                 auto session =
                     std::make_shared<TCPSession<EnumType>>(std::move(socket),
-                                                        _context,
-                                                        _input_queue,
-                                                        OwnerType::SERVER);
+                                                           _context,
+                                                           _input_queue,
+                                                           OwnerType::SERVER);
 
                 if (on_client_connect(session)) {
                     _sessions.push_back(std::move(session));

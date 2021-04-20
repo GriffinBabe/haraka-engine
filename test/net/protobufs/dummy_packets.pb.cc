@@ -14,80 +14,61 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 namespace net {
-class ConnectionDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Connection> _instance;
-} _Connection_default_instance_;
-class DisconnectionDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Disconnection> _instance;
-} _Disconnection_default_instance_;
-class PingDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Ping> _instance;
-} _Ping_default_instance_;
-class ConnectionResponseDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ConnectionResponse> _instance;
-} _ConnectionResponse_default_instance_;
+constexpr Connection::Connection(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : username_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , password_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , instance_(0){}
+struct ConnectionDefaultTypeInternal {
+  constexpr ConnectionDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~ConnectionDefaultTypeInternal() {}
+  union {
+    Connection _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ConnectionDefaultTypeInternal _Connection_default_instance_;
+constexpr Disconnection::Disconnection(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : reason_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+struct DisconnectionDefaultTypeInternal {
+  constexpr DisconnectionDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~DisconnectionDefaultTypeInternal() {}
+  union {
+    Disconnection _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT DisconnectionDefaultTypeInternal _Disconnection_default_instance_;
+constexpr Ping::Ping(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : time_(0){}
+struct PingDefaultTypeInternal {
+  constexpr PingDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~PingDefaultTypeInternal() {}
+  union {
+    Ping _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PingDefaultTypeInternal _Ping_default_instance_;
+constexpr ConnectionResponse::ConnectionResponse(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : status_(0)
+{}
+struct ConnectionResponseDefaultTypeInternal {
+  constexpr ConnectionResponseDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~ConnectionResponseDefaultTypeInternal() {}
+  union {
+    ConnectionResponse _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ConnectionResponseDefaultTypeInternal _ConnectionResponse_default_instance_;
 }  // namespace net
-static void InitDefaultsscc_info_Connection_dummy_5fpackets_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::net::_Connection_default_instance_;
-    new (ptr) ::net::Connection();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::net::Connection::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Connection_dummy_5fpackets_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Connection_dummy_5fpackets_2eproto}, {}};
-
-static void InitDefaultsscc_info_ConnectionResponse_dummy_5fpackets_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::net::_ConnectionResponse_default_instance_;
-    new (ptr) ::net::ConnectionResponse();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::net::ConnectionResponse::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ConnectionResponse_dummy_5fpackets_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_ConnectionResponse_dummy_5fpackets_2eproto}, {}};
-
-static void InitDefaultsscc_info_Disconnection_dummy_5fpackets_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::net::_Disconnection_default_instance_;
-    new (ptr) ::net::Disconnection();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::net::Disconnection::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Disconnection_dummy_5fpackets_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Disconnection_dummy_5fpackets_2eproto}, {}};
-
-static void InitDefaultsscc_info_Ping_dummy_5fpackets_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::net::_Ping_default_instance_;
-    new (ptr) ::net::Ping();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::net::Ping::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Ping_dummy_5fpackets_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Ping_dummy_5fpackets_2eproto}, {}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_dummy_5fpackets_2eproto[4];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_dummy_5fpackets_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_dummy_5fpackets_2eproto = nullptr;
@@ -150,24 +131,19 @@ const char descriptor_table_protodef_dummy_5fpackets_2eproto[] PROTOBUF_SECTION_
   "ED\020\000\022\022\n\016WRONG_PASSWORD\020\001\022\022\n\016ALREADY_LOGG"
   "ED\020\002\022\014\n\010DECLINED\020\003"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_dummy_5fpackets_2eproto_deps[1] = {
-};
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_dummy_5fpackets_2eproto_sccs[4] = {
-  &scc_info_Connection_dummy_5fpackets_2eproto.base,
-  &scc_info_ConnectionResponse_dummy_5fpackets_2eproto.base,
-  &scc_info_Disconnection_dummy_5fpackets_2eproto.base,
-  &scc_info_Ping_dummy_5fpackets_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_dummy_5fpackets_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_dummy_5fpackets_2eproto = {
-  false, false, descriptor_table_protodef_dummy_5fpackets_2eproto, "dummy_packets.proto", 298,
-  &descriptor_table_dummy_5fpackets_2eproto_once, descriptor_table_dummy_5fpackets_2eproto_sccs, descriptor_table_dummy_5fpackets_2eproto_deps, 4, 0,
+  false, false, 298, descriptor_table_protodef_dummy_5fpackets_2eproto, "dummy_packets.proto", 
+  &descriptor_table_dummy_5fpackets_2eproto_once, nullptr, 0, 4,
   schemas, file_default_instances, TableStruct_dummy_5fpackets_2eproto::offsets,
-  file_level_metadata_dummy_5fpackets_2eproto, 4, file_level_enum_descriptors_dummy_5fpackets_2eproto, file_level_service_descriptors_dummy_5fpackets_2eproto,
+  file_level_metadata_dummy_5fpackets_2eproto, file_level_enum_descriptors_dummy_5fpackets_2eproto, file_level_service_descriptors_dummy_5fpackets_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_dummy_5fpackets_2eproto_getter() {
+  return &descriptor_table_dummy_5fpackets_2eproto;
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_dummy_5fpackets_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_dummy_5fpackets_2eproto)), true);
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_dummy_5fpackets_2eproto(&descriptor_table_dummy_5fpackets_2eproto);
 namespace net {
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ConnectionResponse_Status_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_dummy_5fpackets_2eproto);
@@ -197,8 +173,6 @@ constexpr int ConnectionResponse::Status_ARRAYSIZE;
 
 // ===================================================================
 
-void Connection::InitAsDefaultInstance() {
-}
 class Connection::_Internal {
  public:
   using HasBits = decltype(std::declval<Connection>()._has_bits_);
@@ -228,12 +202,12 @@ Connection::Connection(const Connection& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   username_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_username()) {
-    username_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_username(),
+    username_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_username(), 
       GetArena());
   }
   password_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_password()) {
-    password_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_password(),
+    password_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_password(), 
       GetArena());
   }
   instance_ = from.instance_;
@@ -241,10 +215,9 @@ Connection::Connection(const Connection& from)
 }
 
 void Connection::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Connection_dummy_5fpackets_2eproto.base);
-  username_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  password_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  instance_ = 0;
+username_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+password_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+instance_ = 0;
 }
 
 Connection::~Connection() {
@@ -268,11 +241,6 @@ void Connection::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Connection::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Connection& Connection::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Connection_dummy_5fpackets_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Connection::Clear() {
 // @@protoc_insertion_point(message_clear_start:net.Connection)
@@ -297,11 +265,9 @@ void Connection::Clear() {
 const char* Connection::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // required string username = 1;
       case 1:
@@ -335,7 +301,8 @@ const char* Connection::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -495,7 +462,7 @@ bool Connection::IsInitialized() const {
 
 void Connection::InternalSwap(Connection* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   username_.Swap(&other->username_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   password_.Swap(&other->password_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
@@ -503,14 +470,13 @@ void Connection::InternalSwap(Connection* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Connection::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_dummy_5fpackets_2eproto_getter, &descriptor_table_dummy_5fpackets_2eproto_once,
+      file_level_metadata_dummy_5fpackets_2eproto[0]);
 }
-
 
 // ===================================================================
 
-void Disconnection::InitAsDefaultInstance() {
-}
 class Disconnection::_Internal {
  public:
   using HasBits = decltype(std::declval<Disconnection>()._has_bits_);
@@ -531,15 +497,14 @@ Disconnection::Disconnection(const Disconnection& from)
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   reason_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_reason()) {
-    reason_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_reason(),
+    reason_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_reason(), 
       GetArena());
   }
   // @@protoc_insertion_point(copy_constructor:net.Disconnection)
 }
 
 void Disconnection::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Disconnection_dummy_5fpackets_2eproto.base);
-  reason_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+reason_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 Disconnection::~Disconnection() {
@@ -562,11 +527,6 @@ void Disconnection::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Disconnection::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Disconnection& Disconnection::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Disconnection_dummy_5fpackets_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Disconnection::Clear() {
 // @@protoc_insertion_point(message_clear_start:net.Disconnection)
@@ -585,11 +545,9 @@ void Disconnection::Clear() {
 const char* Disconnection::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // optional string reason = 1;
       case 1:
@@ -604,7 +562,8 @@ const char* Disconnection::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -722,20 +681,19 @@ bool Disconnection::IsInitialized() const {
 
 void Disconnection::InternalSwap(Disconnection* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   reason_.Swap(&other->reason_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Disconnection::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_dummy_5fpackets_2eproto_getter, &descriptor_table_dummy_5fpackets_2eproto_once,
+      file_level_metadata_dummy_5fpackets_2eproto[1]);
 }
-
 
 // ===================================================================
 
-void Ping::InitAsDefaultInstance() {
-}
 class Ping::_Internal {
  public:
   using HasBits = decltype(std::declval<Ping>()._has_bits_);
@@ -759,7 +717,7 @@ Ping::Ping(const Ping& from)
 }
 
 void Ping::SharedCtor() {
-  time_ = 0;
+time_ = 0;
 }
 
 Ping::~Ping() {
@@ -781,11 +739,6 @@ void Ping::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Ping::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Ping& Ping::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Ping_dummy_5fpackets_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Ping::Clear() {
 // @@protoc_insertion_point(message_clear_start:net.Ping)
@@ -801,11 +754,9 @@ void Ping::Clear() {
 const char* Ping::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // optional int32 time = 1;
       case 1:
@@ -817,7 +768,8 @@ const char* Ping::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inter
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -931,20 +883,19 @@ bool Ping::IsInitialized() const {
 
 void Ping::InternalSwap(Ping* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   swap(time_, other->time_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Ping::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_dummy_5fpackets_2eproto_getter, &descriptor_table_dummy_5fpackets_2eproto_once,
+      file_level_metadata_dummy_5fpackets_2eproto[2]);
 }
-
 
 // ===================================================================
 
-void ConnectionResponse::InitAsDefaultInstance() {
-}
 class ConnectionResponse::_Internal {
  public:
   using HasBits = decltype(std::declval<ConnectionResponse>()._has_bits_);
@@ -971,7 +922,7 @@ ConnectionResponse::ConnectionResponse(const ConnectionResponse& from)
 }
 
 void ConnectionResponse::SharedCtor() {
-  status_ = 0;
+status_ = 0;
 }
 
 ConnectionResponse::~ConnectionResponse() {
@@ -993,11 +944,6 @@ void ConnectionResponse::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void ConnectionResponse::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const ConnectionResponse& ConnectionResponse::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_ConnectionResponse_dummy_5fpackets_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void ConnectionResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:net.ConnectionResponse)
@@ -1013,11 +959,9 @@ void ConnectionResponse::Clear() {
 const char* ConnectionResponse::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // required .net.ConnectionResponse.Status status = 1;
       case 1:
@@ -1033,7 +977,8 @@ const char* ConnectionResponse::_InternalParse(const char* ptr, ::PROTOBUF_NAMES
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1146,15 +1091,16 @@ bool ConnectionResponse::IsInitialized() const {
 
 void ConnectionResponse::InternalSwap(ConnectionResponse* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   swap(status_, other->status_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ConnectionResponse::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_dummy_5fpackets_2eproto_getter, &descriptor_table_dummy_5fpackets_2eproto_once,
+      file_level_metadata_dummy_5fpackets_2eproto[3]);
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace net

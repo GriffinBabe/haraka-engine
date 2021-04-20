@@ -1,4 +1,4 @@
-#include "core/types.hpp"
+#include "core/types_snapshot.hpp"
 #include <gtest/gtest.h>
 
 class TypeTest : public ::testing::Test {
@@ -10,7 +10,8 @@ TEST_F(TypeTest, TestIntegerAndFloatType)
     core::int_value_t snd_integer(150);
     core::value_t delta_integer = fst_integer.get_delta(&snd_integer);
 
-    int delta_int_value = delta_integer->cast_shared<core::int_value_t>()->get_value();
+    int delta_int_value =
+        delta_integer->cast_shared<core::int_value_t>()->get_value();
 
     ASSERT_EQ(delta_int_value, 50);
 

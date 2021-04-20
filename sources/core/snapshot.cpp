@@ -1,16 +1,15 @@
 #include "core/snapshot.hpp"
 #include <cassert>
 
-core::Snapshot::Snapshot(std::uint32_t tick)
-    : _tick(tick)
+core::Snapshot::Snapshot(std::uint32_t tick) : _tick(tick)
 {
 }
 
-core::Snapshot::Snapshot(const core::Snapshot& other)
-    : _tick(other._tick + 1)
+core::Snapshot::Snapshot(const core::Snapshot& other) : _tick(other._tick + 1)
 {
     for (auto& obj : other._objects) {
-        this->_objects[obj.first] = std::unique_ptr<GameObject>(obj.second->clone());
+        this->_objects[obj.first] =
+            std::unique_ptr<GameObject>(obj.second->clone());
     }
 }
 
@@ -58,26 +57,26 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
         GameObject const* prev_object = prev_snap.get_object(object_id);
         GameObject const* next_object = next_snap.get_object(object_id);
 #ifndef NDEBUG
-       assert(prev_object != nullptr);
+        assert(prev_object != nullptr);
 #endif
-       if (next_object == nullptr) {
-           // object has been deleted in the new snapshot so we added it in the
-           // deleted objects
-           _deleted_objects[object_id] = prev_object;
-       }
-       else {
+        if (next_object == nullptr) {
+            // object has been deleted in the new snapshot so we added it in the
+            // deleted objects
+            _deleted_objects[object_id] = prev_object;
+        }
+        else {
             // object still exists so we keep it
             auto differences = prev_object->compare(next_object);
             for (auto& pair : differences) {
                 _delta_values[object_id].push_back(pair);
             }
-       }
-       it++;
+        }
+        it++;
     }
     // Checks the added objects between the two snapshots
     it = next_snap._objects.begin();
     while (it != next_snap._objects.end()) {
-        std::uint32_t  object_id = it->first;
+        std::uint32_t object_id = it->first;
         GameObject const* next_object = next_snap.get_object(object_id);
         GameObject const* prev_object = prev_snap.get_object(object_id);
 #ifndef NDEBUG

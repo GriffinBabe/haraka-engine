@@ -1,7 +1,7 @@
 #pragma once
+#include <condition_variable>
 #include <deque>
 #include <mutex>
-#include <condition_variable>
 
 /**
  * std::deque wrapper with thread safety mutex

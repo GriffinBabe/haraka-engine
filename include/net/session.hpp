@@ -11,7 +11,7 @@ typedef boost::asio::ip::tcp::socket tcp_socket_t;
 typedef boost::asio::io_context context_t;
 
 /**
- * Enumeration of the owner type (Server if used by the server, Client if by
+ * Enumeration of the owner _type (Server if used by the server, Client if by
  * the client)
  */
 enum OwnerType : std::uint8_t { SERVER, CLIENT };

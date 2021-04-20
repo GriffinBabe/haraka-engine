@@ -19,3 +19,17 @@ add_library(
 )
 
 target_link_libraries(network PUBLIC ${Boost_LIBRARIES} Threads::Threads)
+
+add_library(
+        graphics SHARED
+        graphics/window.cpp
+)
+
+target_link_libraries(graphics PUBLIC ${SDL2_LIBRARIES})
+
+add_executable(
+        game
+        game/game.cpp
+)
+
+target_link_libraries(game PUBLIC core network graphics)

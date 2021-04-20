@@ -30,8 +30,16 @@ else ()
     message(FATAL_ERROR "Couldn't find protobuf")
 endif ()
 
+find_package(SDL2)
+if (${SDL2_FOUND})
+else ()
+    message(FATAL_ERROR "Couldn't find SDL2")
+endif ()
+
+
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${Protobuf_INCLUDE_DIRS})
+message(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(SYSTEM include)
 

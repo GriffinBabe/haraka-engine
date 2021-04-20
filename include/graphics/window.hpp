@@ -1,5 +1,8 @@
 #pragma once
+
 #include <SDL.h>
+#include <vector>
+#include "graphics/draw_instance.hpp"
 
 namespace gfx
 {
@@ -19,9 +22,13 @@ public:
 
     void draw();
 
+    bool destroy();
+
 private:
     SDL_Renderer* _renderer = nullptr;
     SDL_Window* _window = nullptr;
+
+    std::vector<std::shared_ptr<DrawInstance>> _instances;
 
     int _width = 0;
     int _height = 0;

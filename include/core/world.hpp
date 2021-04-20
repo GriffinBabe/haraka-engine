@@ -7,7 +7,7 @@ namespace core {
 /**
  * World contains all GameObject such as characters, environment, projectiles
  */
-class World {
+class World : public Observer {
 public:
 
     World();
@@ -25,6 +25,8 @@ public:
      * @param obj
      */
     void add_gameobject(std::shared_ptr<GameObject> obj);
+
+    void update(Observable* observable, Event& event) override;
 
 private:
 

@@ -26,6 +26,7 @@ int main(int argc, char** argv)
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
+                window.destroy();
                 return 0;
                 break;
             default:

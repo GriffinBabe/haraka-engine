@@ -7,6 +7,7 @@ add_library(core SHARED
         core/teams.cpp
         core/player.cpp
         core/types.cpp
+        core/events.cpp
         )
 
 add_library(
@@ -23,9 +24,10 @@ target_link_libraries(network PUBLIC ${Boost_LIBRARIES} Threads::Threads)
 add_library(
         graphics SHARED
         graphics/window.cpp
+        graphics/draw_instance.cpp
 )
 
-target_link_libraries(graphics PUBLIC ${SDL2_LIBRARIES})
+target_link_libraries(graphics PUBLIC ${SDL2_LIBRARIES} core)
 
 add_executable(
         game

@@ -4,6 +4,7 @@
 #include "core/world.hpp"
 #include "core/action.hpp"
 #include "core/player.hpp"
+#include "core/events.hpp"
 
 namespace core {
 /**

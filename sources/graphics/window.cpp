@@ -55,3 +55,11 @@ void gfx::Window::draw()
 {
     SDL_RenderPresent(_renderer);
 }
+
+bool gfx::Window::destroy()
+{
+    // TODO add log destroy window
+
+    SDL_DestroyRenderer(_renderer);
+    SDL_DestroyWindow(_window);
+}

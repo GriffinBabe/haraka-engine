@@ -18,10 +18,9 @@ std::uint32_t core::Snapshot::tick() const
     return _tick;
 }
 
-void core::Snapshot::add_object(std::uint32_t id,
-                                std::unique_ptr<GameObject>& object)
+void core::Snapshot::add_object(std::unique_ptr<GameObject>& object)
 {
-    _objects[id] = std::move(object);
+    _objects[object->id()] = std::move(object);
 }
 
 core::GameObject* core::Snapshot::get_object(std::uint32_t id)
@@ -67,9 +66,7 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
         else {
             // object still exists so we keep it
             auto differences = prev_object->compare(next_object);
-            for (auto& pair : differences) {
-                _delta_values[object_id].push_back(pair);
-            }
+            _delta_values[prev_object->id()] = differences;
         }
         it++;
     }

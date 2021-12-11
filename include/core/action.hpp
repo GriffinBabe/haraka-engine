@@ -1,6 +1,6 @@
 #pragma once
 #include "core/exception.hpp"
-#include "core/game_object.hpp"
+#include "core/game_object_old.hpp"
 #include "core/world.hpp"
 
 namespace core {

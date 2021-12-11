@@ -1,4 +1,4 @@
-#include "core/types_snapshot.hpp"
+#include "core/types.hpp"
 #include <gtest/gtest.h>
 
 class TypeTest : public ::testing::Test {

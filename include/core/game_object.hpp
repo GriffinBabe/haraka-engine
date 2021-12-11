@@ -1,29 +1,63 @@
 #pragma once
-#include "events.hpp"
-#include <cinttypes>
+#include "core/types.hpp"
+#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace core {
-class GameObject : std::enable_shared_from_this<GameObject>,
-                   public Observable,
-                   public Observer {
+
+/**
+ * Set of differences between two similar objects. The std::string is the name
+ * while the std::shared_ptr<GameValue> (core::value_t) is the delta value.
+ */
+typedef std::map<std::string, core::value_t> diffset_t;
+
+/**
+ * Abstract class that consist of all entities and attributes.
+ */
+class GameObject {
 public:
     GameObject(std::uint32_t id);
 
-    ~GameObject();
+    /**
+     * Copy constructor.
+     * @param obj, the object to deep copy.
+     */
+    GameObject(GameObject const& obj);
 
-    virtual void on_turn_begin() = 0;
+    virtual ~GameObject() = default;
 
-    virtual void on_turn_end() = 0;
+    virtual GameObject* clone() = 0;
 
-    [[nodiscard]] inline std::uint32_t id() const;
+    /**
+     * Iterates over all the mapped GameValues and get the delta values by
+     * comparing with the other GameObject. Returns a list of those delta values
+     * with the corresponding variable name.
+     *
+     * @param other, the other object to compare with.
+     * @return a list of delta values.
+     */
+    diffset_t compare(GameObject const* other) const;
 
-private:
-    std::uint32_t _id;
+    [[nodiscard]] bool is_networked();
+
+    [[nodiscard]] GameValue const* get_value(std::string const& name) const;
+
+    [[nodiscard]] std::uint32_t id() const;
+
+protected:
+    /**
+     * Adds a pointer to the _values map for each member value.
+     * ALWAYS CALL IT IN THE SUBCLASS CONSTRUCTORS
+     */
+    virtual void add_values() = 0;
+
+    bool _networked = false;
+
+    std::map<std::string, GameValue*> _values;
+
+    const std::uint32_t _id = 0;
 };
-} // namespace core
 
-std::uint32_t core::GameObject::id() const
-{
-    return _id;
-}
+} // namespace core

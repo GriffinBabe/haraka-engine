@@ -1,7 +1,7 @@
 #include "core/action.hpp"
-#include "core/game_object.hpp"
+#include "core/game_object_old.hpp"
 #include "core/gameinstance.hpp"
-#include "core/types.hpp"
+#include "core/types_old.hpp"
 #include "core/world.hpp"
 #include <gtest/gtest.h>
 #include <memory>
@@ -14,6 +14,10 @@ public:
     }
 
     ~DummyObject() = default;
+
+    void update(Observable* observer, core::Event& event) override
+    {
+    }
 
     int health()
     {
@@ -62,6 +66,10 @@ class UnitObject : public core::GameObject {
 public:
     UnitObject(std::uint32_t id, core::vec2i& pos, core::Team& team)
         : core::GameObject(id), _pos(pos), _team(team)
+    {
+    }
+
+    void update(Observable* observer, core::Event& event) override
     {
     }
 

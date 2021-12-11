@@ -6,7 +6,8 @@ class SnapshotTest : public ::testing::Test {
 
 class DummyObject : public core::GameObject {
 public:
-    DummyObject(float x, float y) : _position(x, y)
+    DummyObject(std::uint32_t id, float x, float y)
+        : core::GameObject(id), _position(x, y)
     {
         add_values();
     }
@@ -15,7 +16,7 @@ public:
 
     virtual core::GameObject* clone() override
     {
-        core::GameObject* obj = new DummyObject(_position.x(), _position.y());
+        core::GameObject* obj = new DummyObject(_id, _position.x(), _position.y());
         return obj;
     }
 
@@ -35,7 +36,7 @@ private:
 
 class DummyObject2 : public core::GameObject {
 public:
-    DummyObject2(int health) : _health(health)
+    DummyObject2(std::uint32_t id, int health) : core::GameObject(id), _health(health)
     {
         add_values();
     }
@@ -44,7 +45,7 @@ public:
 
     virtual core::GameObject* clone() override
     {
-        core::GameObject* obj = new DummyObject2(_health.get_value());
+        core::GameObject* obj = new DummyObject2(_id, _health.get_value());
         return obj;
     }
 
@@ -68,22 +69,22 @@ TEST_F(SnapshotTest, compare_delta)
     core::Snapshot snap_2(1);
 
     std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject>(0.5, 0.5);
+        std::make_unique<DummyObject>(0, 0.5, 0.5);
 
     std::unique_ptr<core::GameObject> obj_2 =
-        std::make_unique<DummyObject>(1.0, 1.0);
+        std::make_unique<DummyObject>(1, 1.0, 1.0);
 
     std::unique_ptr<core::GameObject> obj_3 =
-        std::make_unique<DummyObject>(1.0, 1.0);
+        std::make_unique<DummyObject>(0, 1.0, 1.0);
 
     std::unique_ptr<core::GameObject> obj_4 =
-        std::make_unique<DummyObject>(0.75, 0.6);
+        std::make_unique<DummyObject>(1, 0.75, 0.6);
 
-    snap_1.add_object(0, obj_1);
-    snap_1.add_object(1, obj_2);
+    snap_1.add_object(obj_1);
+    snap_1.add_object(obj_2);
 
-    snap_2.add_object(0, obj_3);
-    snap_2.add_object(1, obj_4);
+    snap_2.add_object(obj_3);
+    snap_2.add_object(obj_4);
 
     // evaluates the differences in the object between the two snapshots.
     core::DeltaSnapshot delta_snap(0, 1);
@@ -95,11 +96,8 @@ TEST_F(SnapshotTest, compare_delta)
     auto& differences_1 = diffmap.at(0);
     auto& differences_2 = diffmap.at(1);
 
-    ASSERT_EQ(differences_1.at(0).first, "position");
-    ASSERT_EQ(differences_2.at(0).first, "position");
-
-    auto differences_1_val = differences_1.at(0).second->cast<core::vec2f_t>();
-    auto differences_2_val = differences_2.at(0).second->cast<core::vec2f_t>();
+    auto differences_1_val = differences_1.at("position")->cast<core::vec2f_t>();
+    auto differences_2_val = differences_2.at("position")->cast<core::vec2f_t>();
 
     ASSERT_FLOAT_EQ(differences_1_val->x(), 0.5);
     ASSERT_FLOAT_EQ(differences_1_val->y(), 0.5);
@@ -114,13 +112,13 @@ TEST_F(SnapshotTest, compare_delta_2)
     core::Snapshot snap_2(1);
 
     std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(10);
+        std::make_unique<DummyObject2>(0, 10);
 
     // oof
-    std::unique_ptr<core::GameObject> obj_2 = std::make_unique<DummyObject2>(8);
+    std::unique_ptr<core::GameObject> obj_2 = std::make_unique<DummyObject2>(1, 8);
 
-    snap_1.add_object(0, obj_1);
-    snap_2.add_object(0, obj_2);
+    snap_1.add_object(obj_1);
+    snap_2.add_object(obj_2);
 
     core::DeltaSnapshot delta_snap(0, 1);
     delta_snap.evaluate(snap_1, snap_2);
@@ -130,7 +128,7 @@ TEST_F(SnapshotTest, compare_delta_2)
     auto& differences_1 = diffmap.at(0);
 
     auto differences_1_val =
-        differences_1.at(0).second->cast<core::int_value_t>();
+        differences_1.at("position")->cast<core::int_value_t>();
 
     ASSERT_EQ(differences_1_val->get_value(), -2);
 }
@@ -145,7 +143,7 @@ TEST_F(SnapshotTest, deleted_objects)
     // Little cheat as obj_1 pointer is set to null once passed in the snapshot.
     auto* obj_1_address = obj_1.get();
 
-    snap_1.add_object(0, obj_1);
+    snap_1.add_object(obj_1);
 
     core::DeltaSnapshot delta_snap(0, 1);
     delta_snap.evaluate(snap_1, snap_2);
@@ -166,7 +164,7 @@ TEST_F(SnapshotTest, added_objects)
         std::make_unique<DummyObject2>(10);
     auto* obj_1_address = obj_1.get();
 
-    snap_2.add_object(0, obj_1);
+    snap_2.add_object(obj_1);
 
     core::DeltaSnapshot delta_snap(0, 1);
     delta_snap.evaluate(snap_1, snap_2);
@@ -186,8 +184,8 @@ TEST_F(SnapshotTest, snapshot_deep_copy)
         std::make_unique<DummyObject2>(10);
     std::unique_ptr<core::GameObject> obj_2 =
         std::make_unique<DummyObject>(0.5f, 0.5f);
-    snap_1.add_object(0, obj_1);
-    snap_1.add_object(1, obj_2);
+    snap_1.add_object(obj_1);
+    snap_1.add_object(obj_2);
 
     core::Snapshot snap_2(snap_1);
 

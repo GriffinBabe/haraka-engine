@@ -1,5 +1,5 @@
 #pragma once
-#include "core/game_object_snapshot.hpp"
+#include "core/game_object.hpp"
 #include <map>
 
 namespace core {
@@ -12,7 +12,7 @@ namespace core {
  * core::value_t is the delta difference.
  */
 typedef std::map<std::uint32_t,
-                 std::vector<std::pair<std::string, core::value_t>>>
+                 std::map<std::string, core::value_t>>
     diffmap_t;
 
 typedef std::map<std::uint32_t, GameObject const*> object_map_t;
@@ -38,7 +38,7 @@ public:
     /**
      * Adds an object to the snapshot, takes the ownership of the object.
      */
-    void add_object(std::uint32_t id, std::unique_ptr<GameObject>& object);
+    void add_object(std::unique_ptr<GameObject>& object);
 
     /**
      * Returns the game object pointer by id. Returns nullptr if no object has

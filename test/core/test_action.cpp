@@ -1,7 +1,7 @@
 #include "core/action.hpp"
-#include "core/game_object_old.hpp"
+#include "core/game_object.hpp"
 #include "core/gameinstance.hpp"
-#include "core/types_old.hpp"
+#include "core/types.hpp"
 #include "core/world.hpp"
 #include <gtest/gtest.h>
 #include <memory>
@@ -13,27 +13,31 @@ public:
     {
     }
 
-    ~DummyObject() = default;
+    ~DummyObject() {};
+
+protected:
+    void add_values() override
+    {
+        _values["health"] = &_health;
+    }
+
+public:
+    std::unique_ptr<GameObject> clone() override
+    {
+        return std::make_unique<DummyObject>(*this);
+    }
 
     void update(Observable* observer, core::Event& event) override
     {
     }
 
-    int health()
+    core::int_value_t health()
     {
         return _health;
     }
 
-    void on_turn_begin() override
-    {
-    }
-
-    void on_turn_end() override
-    {
-    }
-
 private:
-    int _health;
+    core::int_value_t _health;
 };
 
 class DummyAction : public core::GameAction {
@@ -51,7 +55,7 @@ protected:
             return false;
         }
         auto health = obj_cast->health();
-        if (health > 5) {
+        if (health.get_value() > 5) {
             return true;
         }
         return false;
@@ -64,7 +68,7 @@ protected:
 
 class UnitObject : public core::GameObject {
 public:
-    UnitObject(std::uint32_t id, core::vec2i& pos, core::Team& team)
+    UnitObject(std::uint32_t id, core::vec2i_t& pos, core::Team& team)
         : core::GameObject(id), _pos(pos), _team(team)
     {
     }
@@ -73,28 +77,33 @@ public:
     {
     }
 
-    ~UnitObject() = default;
+    std::unique_ptr<GameObject> clone() override
+    {
+        return std::unique_ptr<GameObject>();
+    }
+
+protected:
+    void add_values() override
+    {
+        _values["position"] = &_pos;
+        _values["team"] = &_team;
+    }
+
+public:
+    ~UnitObject() {};
 
     core::Team& team()
     {
         return _team;
     }
 
-    void move(core::vec2i delta)
+    void move(core::vec2i_t delta)
     {
         _pos += delta;
     }
 
-    void on_turn_begin() override
-    {
-    }
-
-    void on_turn_end() override
-    {
-    }
-
 private:
-    core::vec2i _pos;
+    core::vec2i_t _pos;
     core::Team _team;
 };
 
@@ -120,7 +129,7 @@ protected:
     void perform_act(core::World& world) override
     {
         auto unit_obj = std::dynamic_pointer_cast<UnitObject>(world.get_gameobject(_id));
-        unit_obj->move(core::vec2i(0, 1));
+        unit_obj->move(core::vec2i_t(0, 1));
     }
 
 private:
@@ -191,7 +200,7 @@ TEST_F(ActionTest, test_same_team_action)
 
     core::Player player(player_id, team);
 
-    core::vec2i pos(0, 0);
+    core::vec2i_t pos(0, 0);
 
     auto object = std::make_shared<UnitObject>(object_id, pos, team);
 
@@ -214,7 +223,7 @@ TEST_F(ActionTest, test_wrong_team_action)
     core::Team enemy = { core::Team::RED };
 
     core::Player player(player_id, team);
-    core::vec2i pos(0, 0);
+    core::vec2i_t pos(0, 0);
 
     auto object = std::make_shared<UnitObject>(object_id, pos, enemy);
 

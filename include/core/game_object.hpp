@@ -1,4 +1,5 @@
 #pragma once
+#include "core/events.hpp"
 #include "core/types.hpp"
 #include <map>
 #include <memory>
@@ -16,7 +17,9 @@ typedef std::map<std::string, core::value_t> diffset_t;
 /**
  * Abstract class that consist of all entities and attributes.
  */
-class GameObject {
+class GameObject : std::enable_shared_from_this<GameObject>,
+                   public Observer,
+                   public Observable {
 public:
     GameObject(std::uint32_t id);
 
@@ -28,7 +31,7 @@ public:
 
     virtual ~GameObject() = default;
 
-    virtual GameObject* clone() = 0;
+    virtual std::unique_ptr<GameObject> clone() = 0;
 
     /**
      * Iterates over all the mapped GameValues and get the delta values by

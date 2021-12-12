@@ -1,5 +1,6 @@
 #include "core/snapshot.hpp"
 #include <cassert>
+#include <sstream>
 
 core::Snapshot::Snapshot(std::uint32_t tick) : _tick(tick)
 {
@@ -8,8 +9,7 @@ core::Snapshot::Snapshot(std::uint32_t tick) : _tick(tick)
 core::Snapshot::Snapshot(const core::Snapshot& other) : _tick(other._tick + 1)
 {
     for (auto& obj : other._objects) {
-        this->_objects[obj.first] =
-            std::unique_ptr<GameObject>(obj.second->clone());
+        this->_objects[obj.first] = obj.second->clone();
     }
 }
 

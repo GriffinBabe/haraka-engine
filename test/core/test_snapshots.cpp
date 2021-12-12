@@ -14,9 +14,14 @@ public:
 
     ~DummyObject() = default;
 
-    virtual core::GameObject* clone() override
+    void update(Observable* observer, core::Event& event) override
     {
-        core::GameObject* obj = new DummyObject(_id, _position.x(), _position.y());
+    }
+
+    virtual std::unique_ptr<GameObject> clone() override
+    {
+        auto obj =
+            std::make_unique<DummyObject>(_id, _position.x(), _position.y());
         return obj;
     }
 
@@ -36,16 +41,21 @@ private:
 
 class DummyObject2 : public core::GameObject {
 public:
-    DummyObject2(std::uint32_t id, int health) : core::GameObject(id), _health(health)
+    DummyObject2(std::uint32_t id, int health)
+        : core::GameObject(id), _health(health)
     {
         add_values();
     }
 
     ~DummyObject2() = default;
 
-    virtual core::GameObject* clone() override
+    void update(Observable* observer, core::Event& event) override
     {
-        core::GameObject* obj = new DummyObject2(_id, _health.get_value());
+    }
+
+    virtual std::unique_ptr<GameObject> clone() override
+    {
+        auto obj = std::make_unique<DummyObject2>(_id, _health.get_value());
         return obj;
     }
 
@@ -96,8 +106,10 @@ TEST_F(SnapshotTest, compare_delta)
     auto& differences_1 = diffmap.at(0);
     auto& differences_2 = diffmap.at(1);
 
-    auto differences_1_val = differences_1.at("position")->cast<core::vec2f_t>();
-    auto differences_2_val = differences_2.at("position")->cast<core::vec2f_t>();
+    auto differences_1_val =
+        differences_1.at("position")->cast<core::vec2f_t>();
+    auto differences_2_val =
+        differences_2.at("position")->cast<core::vec2f_t>();
 
     ASSERT_FLOAT_EQ(differences_1_val->x(), 0.5);
     ASSERT_FLOAT_EQ(differences_1_val->y(), 0.5);
@@ -115,7 +127,8 @@ TEST_F(SnapshotTest, compare_delta_2)
         std::make_unique<DummyObject2>(0, 10);
 
     // oof
-    std::unique_ptr<core::GameObject> obj_2 = std::make_unique<DummyObject2>(1, 8);
+    std::unique_ptr<core::GameObject> obj_2 =
+        std::make_unique<DummyObject2>(0, 8);
 
     snap_1.add_object(obj_1);
     snap_2.add_object(obj_2);
@@ -128,7 +141,7 @@ TEST_F(SnapshotTest, compare_delta_2)
     auto& differences_1 = diffmap.at(0);
 
     auto differences_1_val =
-        differences_1.at("position")->cast<core::int_value_t>();
+        differences_1.at("health")->cast<core::int_value_t>();
 
     ASSERT_EQ(differences_1_val->get_value(), -2);
 }
@@ -138,8 +151,9 @@ TEST_F(SnapshotTest, deleted_objects)
     core::Snapshot snap_1(0);
     core::Snapshot snap_2(1);
 
+    std::uint32_t obj_1_id = 0;
     std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(10);
+        std::make_unique<DummyObject2>(obj_1_id, 10);
     // Little cheat as obj_1 pointer is set to null once passed in the snapshot.
     auto* obj_1_address = obj_1.get();
 
@@ -158,10 +172,11 @@ TEST_F(SnapshotTest, deleted_objects)
 TEST_F(SnapshotTest, added_objects)
 {
     core::Snapshot snap_1(0);
-    core::Snapshot snap_2(1);
+    core::Snapshot snap_2(snap_1);
 
+    std::uint32_t obj_1_id = 0;
     std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(10);
+        std::make_unique<DummyObject2>(obj_1_id, 10);
     auto* obj_1_address = obj_1.get();
 
     snap_2.add_object(obj_1);
@@ -171,7 +186,7 @@ TEST_F(SnapshotTest, added_objects)
 
     auto& added_objects = delta_snap.added_objects();
 
-    auto const* added_obj = added_objects.at(0);
+    auto const* added_obj = added_objects.at(obj_1_id);
 
     ASSERT_EQ(added_obj, obj_1_address);
 }
@@ -180,10 +195,13 @@ TEST_F(SnapshotTest, snapshot_deep_copy)
 {
     core::Snapshot snap_1(0);
 
+    std::uint32_t obj_1_id = 0;
+    std::uint32_t obj_2_id = 1;
+
     std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(10);
+        std::make_unique<DummyObject2>(obj_1_id, 10);
     std::unique_ptr<core::GameObject> obj_2 =
-        std::make_unique<DummyObject>(0.5f, 0.5f);
+        std::make_unique<DummyObject>(obj_2_id, 0.5f, 0.5f);
     snap_1.add_object(obj_1);
     snap_1.add_object(obj_2);
 
@@ -191,11 +209,11 @@ TEST_F(SnapshotTest, snapshot_deep_copy)
 
     ASSERT_EQ(snap_2.tick(), 1);
 
-    auto const* snap_1_obj_1 = snap_1.get_object(0);
-    auto const* snap_1_obj_2 = snap_1.get_object(1);
+    auto const* snap_1_obj_1 = snap_1.get_object(obj_1_id);
+    auto const* snap_1_obj_2 = snap_1.get_object(obj_2_id);
 
-    auto const* snap_2_obj_1 = snap_2.get_object(0);
-    auto const* snap_2_obj_2 = snap_2.get_object(1);
+    auto const* snap_2_obj_1 = snap_2.get_object(obj_1_id);
+    auto const* snap_2_obj_2 = snap_2.get_object(obj_2_id);
 
     ASSERT_NE(snap_1_obj_1, snap_2_obj_1);
     ASSERT_NE(snap_1_obj_2, snap_2_obj_2);

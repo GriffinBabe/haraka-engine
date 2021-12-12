@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/game_object_old.hpp"
+#include "core/game_object.hpp"
 namespace gfx {
 
 class DrawInstance : public core::Observer {

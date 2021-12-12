@@ -1,17 +1,16 @@
 #pragma once
+#include "types.hpp"
 
 namespace core {
-struct Team {
+struct Team : PrimitiveValue<int> {
 
     enum TeamType { BLUE=0, RED=1 };
 
-    TeamType _type;
-
-    Team(TeamType type) : _type(type) {}
+    Team(TeamType type) : PrimitiveValue<int>(type) {}
 
     bool is_same(Team& other)
     {
-        return _type == other._type;
+        return _value == other._value;
     }
 
 };

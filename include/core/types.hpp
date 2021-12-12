@@ -120,7 +120,7 @@ public:
         return _value;
     }
 
-private:
+protected:
     T _value;
 };
 
@@ -156,6 +156,30 @@ public:
         return new_value->template cast_shared<GameValue>();
     }
 
+    Vec2 operator-(Vec2 const& other) const
+    {
+        return Vec2(_x - other._x, _y - other._y);
+    }
+
+    Vec2 operator+(Vec2 const& other) const
+    {
+        return Vec2(_x + other._x, _y + other._y);
+    }
+
+    Vec2& operator+=(Vec2 const& other)
+    {
+        _x += other._x;
+        _y += other._y;
+        return *this;
+    }
+
+    Vec2& operator-=(Vec2 const& other)
+    {
+        _x -= other._x;
+        _y -= other._y;
+        return *this;
+    }
+
     T x() const
     {
         return _x;
@@ -166,7 +190,7 @@ public:
         return _y;
     }
 
-private:
+protected:
     T _x;
     T _y;
 };

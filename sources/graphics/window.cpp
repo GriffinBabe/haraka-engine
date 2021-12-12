@@ -62,4 +62,5 @@ bool gfx::Window::destroy()
 
     SDL_DestroyRenderer(_renderer);
     SDL_DestroyWindow(_window);
+    return true;
 }

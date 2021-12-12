@@ -1,5 +1,5 @@
 #pragma once
-#include "core/game_object_old.hpp"
+#include "core/game_object.hpp"
 #include <map>
 
 namespace core {

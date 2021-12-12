@@ -6,7 +6,7 @@ add_library(core SHARED
         core/action.cpp
         core/teams.cpp
         core/player.cpp
-        core/types_old.cpp
+        core/types.cpp
         core/snapshot.cpp
         core/events.cpp
         )

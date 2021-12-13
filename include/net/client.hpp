@@ -67,7 +67,7 @@ public:
         }
     }
 
-    net::ThreadSafeDeque<net::OwnedPacket<EnumType>>& input_queue()
+    util::ThreadSafeDeque<net::OwnedPacket<EnumType>>& input_queue()
     {
         return _input_queue;
     }
@@ -78,6 +78,6 @@ protected:
     std::unique_ptr<net::TCPSession<EnumType>> _session = nullptr;
 
 private:
-    net::ThreadSafeDeque<net::OwnedPacket<EnumType>> _input_queue;
+    util::ThreadSafeDeque<net::OwnedPacket<EnumType>> _input_queue;
 };
 } // namespace net

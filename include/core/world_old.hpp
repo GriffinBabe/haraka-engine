@@ -26,7 +26,7 @@ public:
      */
     void add_gameobject(std::shared_ptr<GameObject> obj);
 
-    void update(Observable* observable, Event& event) override;
+    void react_event(Observable* observable, Event& event) override;
 
 private:
 

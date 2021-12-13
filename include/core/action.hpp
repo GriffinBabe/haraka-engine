@@ -1,7 +1,7 @@
 #pragma once
 #include "core/exception.hpp"
 #include "core/game_object.hpp"
-#include "core/world.hpp"
+#include "core/snapshot.hpp"
 
 namespace core {
 
@@ -11,7 +11,7 @@ public:
     {
     }
 
-    virtual void act(World& world)
+    virtual void act(Snapshot& world)
     {
         bool activable = check_action(world);
         if (!activable) {
@@ -27,20 +27,21 @@ public:
     }
 
 protected:
-    virtual bool check_action(World& obj) = 0;
+    virtual bool check_action(const Snapshot& obj) = 0;
 
-    virtual void perform_act(World& obj) = 0;
+    virtual void perform_act(Snapshot& obj) = 0;
 
     std::uint32_t _id;
 
 };
 
-class CharacterAction : public GameAction {
-public:
-    explicit CharacterAction(std::uint32_t id) : core::GameAction(id)
-    {
-    }
-
-private:
+/**
+ * Status to report if an action failed.
+ */
+struct ActionStatus {
+    std::shared_ptr<GameAction> action;
+    bool success;
+    std::string message;
 };
+
 } // namespace core

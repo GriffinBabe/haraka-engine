@@ -209,7 +209,7 @@ private:
     /**
      * Thread safe queue of all the received packets to handle.
      */
-    net::ThreadSafeDeque<net::OwnedPacket<EnumType>> _input_queue;
+    util::ThreadSafeDeque<net::OwnedPacket<EnumType>> _input_queue;
 
     /**
      * Queue of user sessions.

@@ -6,7 +6,7 @@
 /**
  * std::deque wrapper with thread safety mutex
  */
-namespace net {
+namespace util {
 
 template <typename T>
 class ThreadSafeDeque {

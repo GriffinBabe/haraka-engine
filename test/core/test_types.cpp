@@ -69,3 +69,21 @@ TEST_F(TypeTest, TestInterpolationInt)
     ASSERT_EQ(middle_grid_2->cast<core::vec2i_t>()->x(), 8);
     ASSERT_EQ(middle_grid_2->cast<core::vec2i_t>()->y(), 8);
 }
+
+TEST_F(TypeTest, TestInterpolationNoInterpInt)
+{
+    core::int_value_nointerp_t point(5);
+    core::int_value_nointerp_t new_point(10);
+
+    core::value_t delta_grid_ptr = point.get_delta(&new_point);
+
+    for (float interp_interval = 0.0; interp_interval <= 1.1;
+         interp_interval += 0.1) {
+        core::value_t middle_grid_1 =
+            point.interp(delta_grid_ptr.get(), interp_interval);
+        ASSERT_EQ(
+            middle_grid_1->cast<core::int_value_nointerp_t>()->get_value(), 5);
+        ASSERT_EQ(
+            middle_grid_1->cast<core::int_value_nointerp_t>()->get_value(), 5);
+    }
+}

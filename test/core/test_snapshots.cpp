@@ -14,7 +14,7 @@ public:
 
     ~DummyObject() = default;
 
-    void update(Observable* observer, core::Event& event) override
+    void react_event(Observable* observer, core::Event& event) override
     {
     }
 
@@ -49,7 +49,7 @@ public:
 
     ~DummyObject2() = default;
 
-    void update(Observable* observer, core::Event& event) override
+    void react_event(Observable* observer, core::Event& event) override
     {
     }
 

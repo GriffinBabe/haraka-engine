@@ -1,6 +1,6 @@
 #pragma once
 #include "net/packet.hpp"
-#include "net/tsdeque.hpp"
+#include "util/tsdeque.hpp"
 #include <boost/asio.hpp>
 #include <iostream>
 #include <variant>
@@ -29,7 +29,7 @@ template <typename EnumType>
 class Session : public std::enable_shared_from_this<net::Session<EnumType>> {
 public:
     Session(context_t& context,
-            net::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
+            util::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
             OwnerType owner_type)
         : _context(context), _input_queue(in_queue), _owner(owner_type)
     {
@@ -86,12 +86,12 @@ protected:
     /**
      * Reference to the input queue. (Received messages are put to the queue).
      */
-    net::ThreadSafeDeque<net::OwnedPacket<EnumType>>& _input_queue;
+    util::ThreadSafeDeque<net::OwnedPacket<EnumType>>& _input_queue;
 
     /**
      * TCPSession's output queue. (Message to send are put to the queue).
      */
-    net::ThreadSafeDeque<net::Packet<EnumType>> _output_queue;
+    util::ThreadSafeDeque<net::Packet<EnumType>> _output_queue;
 
     /**
      * Temporary packet used in the read_header(), read_body() and
@@ -115,7 +115,7 @@ class TCPSession : public Session<EnumType> {
 public:
     TCPSession(tcp_socket_t socket,
                context_t& context,
-               net::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
+               util::ThreadSafeDeque<OwnedPacket<EnumType>>& in_queue,
                OwnerType owner_type)
         : Session<EnumType>(context, in_queue, owner_type),
           _socket(std::move(socket))

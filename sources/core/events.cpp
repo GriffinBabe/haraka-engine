@@ -3,7 +3,7 @@
 void core::Observable::notify(Event event)
 {
     for (const auto obs : _observers) {
-        obs->update(this, event);
+        obs->react_event(this, event);
     }
 }
 

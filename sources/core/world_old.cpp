@@ -1,4 +1,4 @@
-#include "core/world.hpp"
+#include "core/world_old.hpp"
 #include "core/exception.hpp"
 
 core::World::World()
@@ -23,7 +23,7 @@ std::shared_ptr<core::GameObject> core::World::get_gameobject(std::uint32_t id)
     }
 }
 
-void core::World::update(core::Observable* observable, core::Event& event)
+void core::World::react_event(core::Observable* observable, core::Event& event)
 {
     switch (event.type) {
     case Event::OBJECT_DELETED:

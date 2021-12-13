@@ -15,42 +15,50 @@ typedef std::map<std::uint32_t,
                  std::map<std::string, core::value_t>>
     diffmap_t;
 
-typedef std::map<std::uint32_t, GameObject const*> object_map_t;
+typedef std::map<std::uint32_t, std::shared_ptr<GameObject>> object_map_t;
 
 /**
  * A snapshot contains all game state information at a giving time.
  */
-class Snapshot {
+class Snapshot : std::enable_shared_from_this<Snapshot> {
     friend class DeltaSnapshot;
 
 public:
     Snapshot(std::uint32_t tick);
 
     /**
-     * Copy constructor. Will copy all the data in the memory. The tick is by
+     * Copy constructor. Will copy all the data in the object. The tick is by
      * default incremented by one.
-     * @param other
      */
     Snapshot(Snapshot const& other);
 
+    /**
+     * Simulates all the game physics
+     * @param delta_time, the time between the two snapshots.
+     */
+    void update(float delta_time);
+
+    /**
+     * @return the tick number of this snapshot
+     */
     std::uint32_t tick() const;
 
     /**
      * Adds an object to the snapshot, takes the ownership of the object.
      */
-    void add_object(std::unique_ptr<GameObject>& object);
+    void add_object(std::shared_ptr<GameObject> object);
 
     /**
      * Returns the game object pointer by id. Returns nullptr if no object has
      * been found.
      * @return pointer to object if found, nullptr if not found.
      */
-    GameObject* get_object(std::uint32_t id);
+    std::shared_ptr<GameObject> get_object(std::uint32_t id);
 
-    GameObject const* get_object(std::uint32_t id) const;
+    std::shared_ptr<const GameObject> get_object(std::uint32_t id) const;
 
 private:
-    std::map<std::uint32_t, std::unique_ptr<GameObject>> _objects;
+    std::map<std::uint32_t, std::shared_ptr<GameObject>> _objects;
 
     std::uint32_t _tick;
 };
@@ -59,9 +67,15 @@ private:
  * A delta snapshot contains all the state differences between two snapshots.
  * The difference being
  */
-class DeltaSnapshot {
+class DeltaSnapshot : std::enable_shared_from_this<DeltaSnapshot> {
 public:
     DeltaSnapshot(std::uint32_t prev_tick, std::uint32_t next_tick);
+
+    /**
+     * Move constructor, as it is moved away to the heap in order to be used as
+     * a pointer.
+     */
+     DeltaSnapshot(DeltaSnapshot&& delta_snapshot);
 
     /**
      * Builds the _delta_values map by comparing each object of the two

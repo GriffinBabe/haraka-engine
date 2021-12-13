@@ -35,7 +35,7 @@ private:
 
 class Observer {
 public:
-    virtual void update(Observable* observer, Event& event) = 0;
+    virtual void react_event(Observable* observer, Event& event) = 0;
 };
 
 } // namespace core

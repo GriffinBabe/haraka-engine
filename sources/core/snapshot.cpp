@@ -18,32 +18,53 @@ std::uint32_t core::Snapshot::tick() const
     return _tick;
 }
 
-void core::Snapshot::add_object(std::unique_ptr<GameObject>& object)
+void core::Snapshot::add_object(std::shared_ptr<GameObject> object)
 {
-    _objects[object->id()] = std::move(object);
+    auto id = object->id();
+    _objects[id] = object;
 }
 
-core::GameObject* core::Snapshot::get_object(std::uint32_t id)
+std::shared_ptr<core::GameObject> core::Snapshot::get_object(std::uint32_t id)
 {
     auto it = _objects.find(id);
     if (it != _objects.end()) {
-        return it->second.get();
+        return it->second;
     }
     return nullptr;
 }
-const core::GameObject* core::Snapshot::get_object(std::uint32_t id) const
+std::shared_ptr<const core::GameObject>
+core::Snapshot::get_object(std::uint32_t id) const
 {
     auto it = _objects.find(id);
     if (it != _objects.end()) {
-        return it->second.get();
+        return it->second;
     }
     return nullptr;
+}
+
+void core::Snapshot::update(float delta_time)
+{
+    auto it = _objects.begin();
+    while (it != _objects.end()) {
+        it->second->update(delta_time);
+    }
 }
 
 core::DeltaSnapshot::DeltaSnapshot(std::uint32_t prev_snap,
                                    std::uint32_t next_snap)
     : _prev_tick(prev_snap), _next_tick(next_snap)
 {
+}
+
+core::DeltaSnapshot::DeltaSnapshot(core::DeltaSnapshot&& delta_snapshot)
+    : _prev_tick(delta_snapshot._prev_tick),
+      _next_tick(delta_snapshot._next_tick),
+      _delta_values(std::move(delta_snapshot._delta_values)),
+      _deleted_objects(std::move(delta_snapshot._deleted_objects)),
+      _added_objects(std::move(delta_snapshot._added_objects))
+{
+    delta_snapshot._prev_tick = 0;
+    delta_snapshot._next_tick = 0;
 }
 
 void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
@@ -53,19 +74,20 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
     auto it = prev_snap._objects.begin();
     while (it != prev_snap._objects.end()) {
         std::uint32_t object_id = it->first;
-        GameObject const* prev_object = prev_snap.get_object(object_id);
-        GameObject const* next_object = next_snap.get_object(object_id);
+        auto prev_object = prev_snap.get_object(object_id);
+        auto next_object = next_snap.get_object(object_id);
 #ifndef NDEBUG
         assert(prev_object != nullptr);
 #endif
         if (next_object == nullptr) {
             // object has been deleted in the new snapshot so we added it in the
             // deleted objects
-            _deleted_objects[object_id] = prev_object;
+            _deleted_objects[object_id] =
+                std::const_pointer_cast<GameObject>(prev_object);
         }
         else {
             // object still exists so we keep it
-            auto differences = prev_object->compare(next_object);
+            auto differences = prev_object->compare(next_object.get());
             _delta_values[prev_object->id()] = differences;
         }
         it++;
@@ -74,13 +96,14 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
     it = next_snap._objects.begin();
     while (it != next_snap._objects.end()) {
         std::uint32_t object_id = it->first;
-        GameObject const* next_object = next_snap.get_object(object_id);
-        GameObject const* prev_object = prev_snap.get_object(object_id);
+        auto next_object = next_snap.get_object(object_id);
+        auto prev_object = prev_snap.get_object(object_id);
 #ifndef NDEBUG
         assert(next_object != nullptr);
 #endif
         if (prev_object == nullptr) {
-            _added_objects[object_id] = next_object;
+            _added_objects[object_id] =
+                std::const_pointer_cast<GameObject>(next_object);
         }
         it++;
     }

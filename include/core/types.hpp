@@ -1,6 +1,6 @@
 #pragma once
-#include <memory>
 #include <assert.h>
+#include <memory>
 
 namespace core {
 
@@ -196,12 +196,37 @@ protected:
 };
 
 /**
+ * This primitive value disables interpolation. Meaning that the value directly
+ * "jumps" from one tick to the other.
+ */
+template <typename T,
+          typename = typename std::enable_if<std::is_fundamental<T>::value>>
+class PrimitiveValueNoInterp : public PrimitiveValue<T> {
+public:
+    PrimitiveValueNoInterp(T value) : PrimitiveValue<T>(value)
+    {
+    }
+
+    virtual std::shared_ptr<GameValue> interp(GameValue* delta,
+                                              float interval) override
+    {
+        // specifying the THIS keyword tells the compiler that the variable
+        // _value is dependant of the initialization of the object.
+        // This is required because the compiler does not initialize the
+        // parent template before reaching this part of the code
+        return std::make_shared<PrimitiveValueNoInterp>(this->_value);
+    }
+};
+
+/**
  * Predefined common Game value types.
  */
 typedef std::shared_ptr<GameValue> value_t;
 
 typedef PrimitiveValue<float> float_value_t;
 typedef PrimitiveValue<int> int_value_t;
+
+typedef PrimitiveValueNoInterp<int> int_value_nointerp_t;
 
 typedef Vec2<float> vec2f_t;
 typedef Vec2<int> vec2i_t;

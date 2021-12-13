@@ -31,6 +31,15 @@ public:
 
     virtual ~GameObject() = default;
 
+    /**
+     * Updates physics, time dependant mechanics.
+     * @param delta_time
+     */
+    virtual void update(float delta_time) = 0;
+
+    /**
+     * @return an unique pointer to a deepcopy of this game object.
+     */
     virtual std::unique_ptr<GameObject> clone() = 0;
 
     /**

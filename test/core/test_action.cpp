@@ -2,7 +2,6 @@
 #include "core/game_object.hpp"
 #include "core/gameinstance.hpp"
 #include "core/types.hpp"
-#include "core/world.hpp"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -14,6 +13,10 @@ public:
     }
 
     ~DummyObject() {};
+
+    void update(float delta_time) override
+    {
+    }
 
 protected:
     void add_values() override
@@ -27,7 +30,7 @@ public:
         return std::make_unique<DummyObject>(*this);
     }
 
-    void update(Observable* observer, core::Event& event) override
+    void react_event(Observable* observer, core::Event& event) override
     {
     }
 
@@ -47,10 +50,10 @@ public:
     }
 
 protected:
-    bool check_action(core::World& world) override
+    bool check_action(const core::Snapshot& snap) override
     {
         auto obj_cast =
-            std::dynamic_pointer_cast<DummyObject>(world.get_gameobject(_id));
+            std::dynamic_pointer_cast<DummyObject>(snap.get_object(_id));
         if (obj_cast == nullptr) {
             return false;
         }
@@ -60,7 +63,7 @@ protected:
         }
         return false;
     }
-    void perform_act(core::World& world) override
+    void perform_act(core::Snapshot& snap) override
     {
         std::cout << "Hit" << std::endl;
     }
@@ -73,7 +76,11 @@ public:
     {
     }
 
-    void update(Observable* observer, core::Event& event) override
+    void update(float delta_time) override
+    {
+    }
+
+    void react_event(Observable* observer, core::Event& event) override
     {
     }
 
@@ -115,20 +122,20 @@ public:
     }
 
 protected:
-    bool check_action(core::World& world) override
+    bool check_action(const core::Snapshot& snap) override
     {
         // check if unit belongs to the same team than the player
         auto unit_obj =
-            std::dynamic_pointer_cast<UnitObject>(world.get_gameobject(_id));
+            std::dynamic_pointer_cast<UnitObject>(snap.get_object(_id));
         if (unit_obj == nullptr) return false;
         if (!unit_obj->team().is_same(_player.team())) return false;
 
         return true;
     }
 
-    void perform_act(core::World& world) override
+    void perform_act(core::Snapshot& snap) override
     {
-        auto unit_obj = std::dynamic_pointer_cast<UnitObject>(world.get_gameobject(_id));
+        auto unit_obj = std::dynamic_pointer_cast<UnitObject>(snap.get_object(_id));
         unit_obj->move(core::vec2i_t(0, 1));
     }
 
@@ -141,57 +148,73 @@ class ActionTest : public ::testing::Test {
 
 TEST_F(ActionTest, test_valid_action)
 {
-    core::World world;
-    core::GameInstance instance(world);
-
     // 10 Hp shoud work
     std::uint32_t object_id = 0;
     auto object = std::make_shared<DummyObject>(object_id, 10);
 
-    world.add_gameobject(std::dynamic_pointer_cast<core::GameObject>(object));
+    core::Snapshot snapshot(0);
+    snapshot.add_object(object);
 
     auto action = std::make_shared<DummyAction>(object_id);
 
-    ASSERT_TRUE(instance.play_action(action));
+    core::GameInstance instance(snapshot);
+    instance.add_action(action);
 
     // Unexisting object
     object_id = 2;
-    action = std::make_shared<DummyAction>(object_id);
+    auto action_2 = std::make_shared<DummyAction>(object_id);
+    instance.add_action(action);
 
-    ASSERT_FALSE(instance.play_action(action));
+    instance.update_tick();
+
+    // get action status
+    auto report_list = instance.action_status_list();
+
+    auto status_1 = report_list.at(0);
+    auto status_2 = report_list.at(1);
+
+    ASSERT_TRUE(status_1.success);
+    ASSERT_FALSE(status_2.success);
+    std::cout << status_2.message << std::endl;
 }
 
 TEST_F(ActionTest, test_unvalid_action)
 {
-    core::World world;
-    core::GameInstance instance(world);
-
     std::uint32_t object_id = 0;
     auto object = std::make_shared<DummyObject>(object_id, 2);
 
-    world.add_gameobject(std::dynamic_pointer_cast<core::GameObject>(object));
+    core::Snapshot snapshot(0);
+    snapshot.add_object(object);
+
+    core::GameInstance instance(snapshot);
 
     auto action = std::make_shared<DummyAction>(object_id);
+    instance.update_tick();
 
-    ASSERT_FALSE(instance.play_action(action));
+    auto report_list = instance.action_status_list();
+
+    ASSERT_FALSE(report_list.at(0).success);
 }
 
 TEST_F(ActionTest, test_unexisting_object_action)
 {
-    core::World world;
-    core::GameInstance instance(world);
+    core::Snapshot snapshot(0);
+    core::GameInstance instance(snapshot);
 
     std::uint32_t object_id = 0;
 
     auto action = std::make_shared<DummyAction>(object_id);
 
-    ASSERT_FALSE(instance.play_action(action));
+    instance.update_tick();
+
+    auto report_list = instance.action_status_list();
+
+    ASSERT_FALSE(report_list.at(0).success);
 }
 
 TEST_F(ActionTest, test_same_team_action)
 {
-    core::World world;
-    core::GameInstance instance(world);
+    core::Snapshot snapshot(0);
 
     std::uint32_t object_id = 0;
     std::uint32_t player_id = 0;
@@ -204,17 +227,23 @@ TEST_F(ActionTest, test_same_team_action)
 
     auto object = std::make_shared<UnitObject>(object_id, pos, team);
 
-    world.add_gameobject(object);
+    snapshot.add_object(object);
+
+    core::GameInstance instance(snapshot);
 
     auto action = std::make_shared<MoveUnitDownAction>(object_id, player);
 
-    ASSERT_TRUE(instance.play_action(action));
+    instance.add_action(action);
+    instance.update_tick();
+
+    auto report_list = instance.action_status_list();
+
+    ASSERT_TRUE(report_list.at(0).success);
 }
 
 TEST_F(ActionTest, test_wrong_team_action)
 {
-    core::World world;
-    core::GameInstance instance(world);
+    core::Snapshot snapshot(0);
 
     std::uint32_t object_id = 0;
     std::uint32_t player_id = 0;
@@ -227,9 +256,16 @@ TEST_F(ActionTest, test_wrong_team_action)
 
     auto object = std::make_shared<UnitObject>(object_id, pos, enemy);
 
-    world.add_gameobject(object);
+    snapshot.add_object(object);
+
+    core::GameInstance instance(snapshot);
 
     auto action = std::make_shared<MoveUnitDownAction>(object_id, player);
 
-    ASSERT_FALSE(instance.play_action(action));
+    instance.add_action(action);
+    instance.update_tick();
+
+    auto report_list = instance.action_status_list();
+
+    ASSERT_FALSE(report_list.at(0).success);
 }

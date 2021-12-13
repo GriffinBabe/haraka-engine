@@ -1,5 +1,5 @@
 #include "core/gameinstance.hpp"
-#include "core/world.hpp"
+#include "core/world_old.hpp"
 #include "graphics/window.hpp"
 
 int main(int argc, char** argv)

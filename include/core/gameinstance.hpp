@@ -1,38 +1,98 @@
 #pragma once
 
-#include <vector>
-#include "core/world.hpp"
 #include "core/action.hpp"
-#include "core/player.hpp"
 #include "core/events.hpp"
+#include "core/player.hpp"
+#include "core/snapshot.hpp"
+#include "util/tsdeque.hpp"
+#include <deque>
+#include <vector>
 
 namespace core {
 /**
  * Base game class, used both by client and server
  */
 class GameInstance {
-
 public:
-
-    GameInstance(core::World& world);
-
-    /**
-     * Adds a new player to the player list.
-     * @param player
-     */
-    void add_player(core::Player const& player);
+    GameInstance(core::Snapshot& snapshot,
+                 bool server_side = false,
+                 std::uint32_t tick_rate = 15);
 
     /**
-     * Play an action on a GameObject. Generally launched from a packets.
-     * @param action
-     * @return
+     * Adds an action to the action list. This action will be used in the next
+     * tick simulation.
+     * @param action, pointer to a GameAction
      */
-    bool play_action(std::shared_ptr<core::GameAction> action);
+    void add_action(std::shared_ptr<core::GameAction> action);
+
+    /**
+     * Simulates the next snapshot from the current snapshot.
+     * @return A pointer to a delta snapshot. Will be used over the network.
+     */
+    std::shared_ptr<core::DeltaSnapshot> update_tick();
+
+    /**
+     * @return the action status list.
+     */
+    [[nodiscard]] std::vector<ActionStatus> action_status_list();
 
 private:
-    core::World& _world;
+    /**
+     * Executes an action, performing a change on the game state or return false
+     * if the action is impossible. (If the player is attempting to execute
+     * something forbidden by the game rules).
+     * @param action, a pointer to a GameAction.
+     * @param snapshot the snapshot where the actions are performed.
+     * @return true if the action succeeded, false otherwise.
+     */
+    void _play_action(std::shared_ptr<core::GameAction> action,
+                      Snapshot& snapshot);
 
-    std::vector<core::Player> _players;
+    /**
+     * Performs initialization, depends if server or client side.
+     */
+    void _initialize();
+
+    /**
+     * The actions waiting to be used in the next snapshot
+     */
+    util::ThreadSafeDeque<std::shared_ptr<GameAction>> _action_queue;
+
+    /**
+     * Contains reports of the action status that where used when computing the
+     * current snapshot.
+     */
+    std::vector<ActionStatus> _action_status_list;
+
+    /**
+     * The number of simulations (server-side) done per seconds.
+     */
+    const std::uint32_t _tick_rate;
+
+    /**
+     * Milliseconds between each tick.
+     */
+    float _ms_per_tick;
+
+    /**
+     * Is this a server side instance?
+     */
+    const bool _server_side;
+
+    /**
+     * The initial game state.
+     */
+    const Snapshot _base_snapshot;
+
+    /**
+     * The current game state
+     */
+    Snapshot _current_snapshot;
+
+    /**
+     * A double access queue containing all the delta snapshots of the game.
+     */
+    std::deque<std::shared_ptr<DeltaSnapshot>> _delta_snapshots;
 };
 
-}
+} // namespace core

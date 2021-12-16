@@ -45,7 +45,7 @@ private:
      * @param snapshot the snapshot where the actions are performed.
      * @return true if the action succeeded, false otherwise.
      */
-    void _play_action(std::shared_ptr<core::GameAction> action,
+    ActionStatus _play_action(std::shared_ptr<core::GameAction> action,
                       Snapshot& snapshot);
 
     /**

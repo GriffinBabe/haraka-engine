@@ -12,14 +12,13 @@ add_executable(
 
 target_link_libraries(tutorials_asio_tcp PUBLIC ${Boost_LIBRARIES} Threads::Threads)
 
-add_executable(
-        tutorials_protobuf
-        tutorials/google_protobufs.cpp
-        tutorials/protobufs/connection.pb.cc
-)
-
-message("Protobuf libraries ${Protobuf_LIBRARIES}")
-target_link_libraries(tutorials_protobuf PUBLIC ${Protobuf_LIBRARIES})
+#add_executable(
+#        tutorials_protobuf
+#        tutorials/google_protobufs.cpp
+#        tutorials/protobufs/connection.pb.cc
+#)
+#
+#target_link_libraries(tutorials_protobuf PUBLIC ${Protobuf_LIBRARIES})
 
 add_executable(
         test_server
@@ -27,7 +26,7 @@ add_executable(
         net/protobufs/dummy_packets.pb.cc
 )
 
-target_link_libraries(test_server PUBLIC network GTest::Main protobuf ${Protobuf_LIBRARIES} Threads::Threads)
+target_link_libraries(test_server PUBLIC network GTest::Main ${Protobuf_LIBRARIES} Threads::Threads)
 
 
 add_executable(
@@ -51,5 +50,15 @@ add_executable(
 
 target_link_libraries(test_actions PUBLIC core GTest::Main)
 
-#gtest_discover_tests(test_server)
+add_executable(
+        test_gameinstance
+        core/test_gameinstance.cpp
+)
+
+target_link_libraries(test_gameinstance PUBLIC core GTest::Main)
+
+gtest_discover_tests(test_server)
+gtest_discover_tests(test_types)
+gtest_discover_tests(test_snapshots)
 gtest_discover_tests(test_actions)
+gtest_discover_tests(test_gameinstance)

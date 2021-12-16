@@ -166,6 +166,11 @@ public:
         return Vec2(_x + other._x, _y + other._y);
     }
 
+    Vec2 operator*(T scalar) const
+    {
+        return Vec2(_x * scalar, _y * scalar);
+    }
+
     Vec2& operator+=(Vec2 const& other)
     {
         _x += other._x;

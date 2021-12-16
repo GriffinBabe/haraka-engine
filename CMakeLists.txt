@@ -39,8 +39,8 @@ endif ()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${Protobuf_INCLUDE_DIRS})
-message(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(SYSTEM include)
 
 add_subdirectory(sources)

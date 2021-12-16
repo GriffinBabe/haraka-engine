@@ -19,13 +19,15 @@ std::shared_ptr<core::DeltaSnapshot> core::GameInstance::update_tick()
     core::Snapshot next_snapshot(_current_snapshot);
 
     // fires all the actions in the world state
+    _action_status_list.clear();
     while (!_action_queue.empty()) {
         auto action_ptr = _action_queue.pop_front();
-        _play_action(action_ptr, next_snapshot);
+        auto status = _play_action(action_ptr, next_snapshot);
+        _action_status_list.push_back(status);
     }
 
-    // updates physics...
-    next_snapshot.update(_ms_per_tick);
+    // updates physics, delta time in seconds
+    next_snapshot.update(_ms_per_tick / 1000.0f);
 
     // computes delta snapshot
     core::DeltaSnapshot delta_snapshot(_current_snapshot.tick(),
@@ -46,11 +48,9 @@ void core::GameInstance::add_action(std::shared_ptr<core::GameAction> action)
     _action_queue.push_back(action);
 }
 
-void core::GameInstance::_play_action(std::shared_ptr<core::GameAction> action,
+core::ActionStatus core::GameInstance::_play_action(std::shared_ptr<core::GameAction> action,
                                       core::Snapshot& snapshot)
 {
-    _action_status_list.clear();
-
     ActionStatus status;
     status.action = action;
 
@@ -66,7 +66,7 @@ void core::GameInstance::_play_action(std::shared_ptr<core::GameAction> action,
         status.success = false;
         status.message = exc.what();
     }
-    _action_status_list.push_back(status);
+    return status;
 }
 
 void core::GameInstance::_initialize()

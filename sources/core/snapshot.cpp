@@ -47,6 +47,7 @@ void core::Snapshot::update(float delta_time)
     auto it = _objects.begin();
     while (it != _objects.end()) {
         it->second->update(delta_time);
+        it++;
     }
 }
 

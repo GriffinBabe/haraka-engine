@@ -12,6 +12,10 @@ public:
         add_values();
     }
 
+    void update(float delta_time) override
+    {
+    }
+
     ~DummyObject() = default;
 
     void react_event(Observable* observer, core::Event& event) override
@@ -49,6 +53,10 @@ public:
 
     ~DummyObject2() = default;
 
+    void update(float delta_time) override
+    {
+    }
+
     void react_event(Observable* observer, core::Event& event) override
     {
     }
@@ -78,17 +86,13 @@ TEST_F(SnapshotTest, compare_delta)
     core::Snapshot snap_1(0);
     core::Snapshot snap_2(1);
 
-    std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject>(0, 0.5, 0.5);
+    auto obj_1 = std::make_shared<DummyObject>(0, 0.5, 0.5);
 
-    std::unique_ptr<core::GameObject> obj_2 =
-        std::make_unique<DummyObject>(1, 1.0, 1.0);
+    auto obj_2 = std::make_shared<DummyObject>(1, 1.0, 1.0);
 
-    std::unique_ptr<core::GameObject> obj_3 =
-        std::make_unique<DummyObject>(0, 1.0, 1.0);
+    auto obj_3 = std::make_shared<DummyObject>(0, 1.0, 1.0);
 
-    std::unique_ptr<core::GameObject> obj_4 =
-        std::make_unique<DummyObject>(1, 0.75, 0.6);
+    auto obj_4 = std::make_shared<DummyObject>(1, 0.75, 0.6);
 
     snap_1.add_object(obj_1);
     snap_1.add_object(obj_2);
@@ -123,12 +127,10 @@ TEST_F(SnapshotTest, compare_delta_2)
     core::Snapshot snap_1(0);
     core::Snapshot snap_2(1);
 
-    std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(0, 10);
+    auto obj_1 = std::make_shared<DummyObject2>(0, 10);
 
     // oof
-    std::unique_ptr<core::GameObject> obj_2 =
-        std::make_unique<DummyObject2>(0, 8);
+    auto obj_2 = std::make_shared<DummyObject2>(0, 8);
 
     snap_1.add_object(obj_1);
     snap_2.add_object(obj_2);
@@ -152,8 +154,7 @@ TEST_F(SnapshotTest, deleted_objects)
     core::Snapshot snap_2(1);
 
     std::uint32_t obj_1_id = 0;
-    std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(obj_1_id, 10);
+    auto obj_1 = std::make_shared<DummyObject2>(obj_1_id, 10);
     // Little cheat as obj_1 pointer is set to null once passed in the snapshot.
     auto* obj_1_address = obj_1.get();
 
@@ -164,9 +165,9 @@ TEST_F(SnapshotTest, deleted_objects)
 
     auto& deleted_objects = delta_snap.deleted_objects();
 
-    auto const* deleted_obj = deleted_objects.at(0);
+    auto const deleted_obj = deleted_objects.at(0);
 
-    ASSERT_EQ(deleted_obj, obj_1_address);
+    ASSERT_EQ(deleted_obj.get(), obj_1_address);
 }
 
 TEST_F(SnapshotTest, added_objects)
@@ -175,8 +176,7 @@ TEST_F(SnapshotTest, added_objects)
     core::Snapshot snap_2(snap_1);
 
     std::uint32_t obj_1_id = 0;
-    std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(obj_1_id, 10);
+    auto obj_1 = std::make_shared<DummyObject2>(obj_1_id, 10);
     auto* obj_1_address = obj_1.get();
 
     snap_2.add_object(obj_1);
@@ -186,9 +186,9 @@ TEST_F(SnapshotTest, added_objects)
 
     auto& added_objects = delta_snap.added_objects();
 
-    auto const* added_obj = added_objects.at(obj_1_id);
+    auto const added_obj = added_objects.at(obj_1_id);
 
-    ASSERT_EQ(added_obj, obj_1_address);
+    ASSERT_EQ(added_obj.get(), obj_1_address);
 }
 
 TEST_F(SnapshotTest, snapshot_deep_copy)
@@ -198,10 +198,8 @@ TEST_F(SnapshotTest, snapshot_deep_copy)
     std::uint32_t obj_1_id = 0;
     std::uint32_t obj_2_id = 1;
 
-    std::unique_ptr<core::GameObject> obj_1 =
-        std::make_unique<DummyObject2>(obj_1_id, 10);
-    std::unique_ptr<core::GameObject> obj_2 =
-        std::make_unique<DummyObject>(obj_2_id, 0.5f, 0.5f);
+    auto obj_1 = std::make_shared<DummyObject2>(obj_1_id, 10);
+    auto obj_2 = std::make_shared<DummyObject>(obj_2_id, 0.5f, 0.5f);
     snap_1.add_object(obj_1);
     snap_1.add_object(obj_2);
 
@@ -209,14 +207,14 @@ TEST_F(SnapshotTest, snapshot_deep_copy)
 
     ASSERT_EQ(snap_2.tick(), 1);
 
-    auto const* snap_1_obj_1 = snap_1.get_object(obj_1_id);
-    auto const* snap_1_obj_2 = snap_1.get_object(obj_2_id);
+    auto const snap_1_obj_1 = snap_1.get_object(obj_1_id);
+    auto const snap_1_obj_2 = snap_1.get_object(obj_2_id);
 
-    auto const* snap_2_obj_1 = snap_2.get_object(obj_1_id);
-    auto const* snap_2_obj_2 = snap_2.get_object(obj_2_id);
+    auto const snap_2_obj_1 = snap_2.get_object(obj_1_id);
+    auto const snap_2_obj_2 = snap_2.get_object(obj_2_id);
 
-    ASSERT_NE(snap_1_obj_1, snap_2_obj_1);
-    ASSERT_NE(snap_1_obj_2, snap_2_obj_2);
+    ASSERT_NE(snap_1_obj_1.get(), snap_2_obj_1.get());
+    ASSERT_NE(snap_1_obj_2.get(), snap_2_obj_2.get());
 
     ASSERT_EQ(snap_1_obj_1->get_value("health")
                   ->cst_cast<core::int_value_t>()

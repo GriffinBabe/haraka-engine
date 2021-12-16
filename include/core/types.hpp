@@ -1,6 +1,8 @@
 #pragma once
 #include <assert.h>
 #include <memory>
+// TODO REMOVE
+#include <iostream>
 
 namespace core {
 
@@ -9,6 +11,15 @@ namespace core {
  */
 class GameValue : public std::enable_shared_from_this<GameValue> {
 public:
+    /**
+     * Takes the values of the given GameValues and copies it to this game
+     * values. This is a kind of copy assignment but supports polymorphism
+     *
+     * @param other
+     */
+    virtual void change(std::shared_ptr<GameValue>& other) = 0;
+
+
     /**
      * Computes the difference between the two GameValues and stores it in a
      * GameValue
@@ -98,6 +109,12 @@ public:
     {
     }
 
+    void change(std::shared_ptr<GameValue>& other) override
+    {
+        auto other_casted = std::dynamic_pointer_cast<PrimitiveValue>(other);
+        _value = other_casted->_value;
+    }
+
     virtual std::shared_ptr<GameValue> get_delta(GameValue* delta) override
     {
         auto new_value = delta->cast<PrimitiveValue<T>>();
@@ -136,6 +153,15 @@ public:
 
     Vec2(T x, T y) : _x(x), _y(y)
     {
+    }
+
+    Vec2& operator=(Vec2 const& other) = default;
+
+    void change(std::shared_ptr<GameValue>& other) override
+    {
+        auto other_casted = std::dynamic_pointer_cast<Vec2>(other);
+        _x = other_casted->_x;
+        _y = other_casted->_y;
     }
 
     virtual std::shared_ptr<GameValue> get_delta(GameValue* delta) override

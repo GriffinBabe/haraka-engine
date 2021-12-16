@@ -12,6 +12,12 @@ public:
         add_values();
     }
 
+    DummyObject(DummyObject const& other)
+        : core::GameObject(other._id), _pos(other._pos), _speed(other._speed)
+    {
+        add_values();
+    }
+
     void react_event(Observable* observer, core::Event& event) override
     {
     }
@@ -24,7 +30,7 @@ public:
 
     std::unique_ptr<GameObject> clone() override
     {
-        return std::make_unique<DummyObject>(_id, _pos, _speed);
+        return std::make_unique<DummyObject>(*this);
     }
 
 protected:
@@ -47,10 +53,11 @@ TEST_F(GameInstanceTest, test_delta_update)
     snapshot.add_object(object);
 
     core::GameInstance instance(snapshot);
-    auto delta = instance.update_tick();  // tickrate is 15, so 66,6666.. ms per tick.
+    auto delta =
+        instance.update_tick(); // tickrate is 15, so 66,6666.. ms per tick.
 
     auto delta_position =
         delta->delta_values().at(0).at("position")->cast<core::vec2f_t>();
-    ASSERT_FLOAT_EQ(delta_position->x(), .5f * (1.f/15.f));
+    ASSERT_FLOAT_EQ(delta_position->x(), .5f * (1.f / 15.f));
     ASSERT_FLOAT_EQ(delta_position->y(), .0f);
 }

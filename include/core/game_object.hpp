@@ -27,9 +27,17 @@ public:
      * Copy constructor.
      * @param obj, the object to deep copy.
      */
-    GameObject(GameObject const& obj);
+    GameObject(GameObject const& obj) = delete;
 
     virtual ~GameObject() = default;
+
+    /**
+     * Returns a copy of the game object with interpolated values.
+     * @param differences, the difference map on the gameobject's values.
+     * @param interp, the interpolation time. The maximum being 1.0 and the minimum 0.0
+     * @return a object with interpolated game state values.
+     */
+    std::unique_ptr<GameObject> interpolate(diffset_t const& differences, float interp);
 
     /**
      * Updates physics, time dependant mechanics.
@@ -41,6 +49,7 @@ public:
      * @return an unique pointer to a deepcopy of this game object.
      */
     virtual std::unique_ptr<GameObject> clone() = 0;
+
 
     /**
      * Iterates over all the mapped GameValues and get the delta values by

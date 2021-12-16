@@ -12,6 +12,12 @@ public:
         add_values();
     }
 
+    DummyObject(DummyObject const& other)
+        : core::GameObject(other._id), _position(other._position)
+    {
+        add_values();
+    }
+
     void update(float delta_time) override
     {
     }
@@ -24,9 +30,7 @@ public:
 
     virtual std::unique_ptr<GameObject> clone() override
     {
-        auto obj =
-            std::make_unique<DummyObject>(_id, _position.x(), _position.y());
-        return obj;
+        return std::make_unique<DummyObject>(*this);
     }
 
     core::vec2f_t position()
@@ -51,6 +55,12 @@ public:
         add_values();
     }
 
+    DummyObject2(DummyObject2 const& other)
+        : core::GameObject(other._id), _health(other._health)
+    {
+        add_values();
+    }
+
     ~DummyObject2() = default;
 
     void update(float delta_time) override
@@ -63,8 +73,7 @@ public:
 
     virtual std::unique_ptr<GameObject> clone() override
     {
-        auto obj = std::make_unique<DummyObject2>(_id, _health.get_value());
-        return obj;
+        return std::make_unique<DummyObject2>(*this);
     }
 
     core::int_value_t health()
@@ -230,4 +239,40 @@ TEST_F(SnapshotTest, snapshot_deep_copy)
     ASSERT_EQ(
         snap_1_obj_2->get_value("position")->cst_cast<core::vec2f_t>()->y(),
         snap_2_obj_2->get_value("position")->cst_cast<core::vec2f_t>()->y());
+}
+
+TEST_F(SnapshotTest, test_apply_snapshot)
+{
+    core::Snapshot snap_1(0);
+    core::Snapshot snap_2(1);
+
+    auto obj_snap_1 = std::make_shared<DummyObject>(0, 0.0f, 0.0f);
+    auto obj_2_snap_1 = std::make_shared<DummyObject>(1, 0.0f, 0.0f);
+    snap_1.add_object(obj_snap_1);
+    snap_1.add_object(obj_2_snap_1);
+
+    auto obj_snap_2 = std::make_shared<DummyObject>(0, 1.0f, 1.0f);
+    snap_2.add_object(obj_snap_2);
+
+    core::DeltaSnapshot delta(snap_1.tick(), snap_2.tick());
+    delta.evaluate(snap_1, snap_2);
+
+    // interpolates a snapshot
+    auto snap_interpolated = snap_1.apply(delta, 0.5f);
+
+    auto obj_1_interpolated = snap_interpolated.get_object(0);
+    auto obj_2_interpolated = snap_interpolated.get_object(1);
+
+    ASSERT_NE(obj_snap_1.get(), obj_1_interpolated.get());
+    ASSERT_FALSE(obj_2_interpolated
+                 == nullptr); // Shouldn't be deleted if interp < 1.0f
+
+    ASSERT_FLOAT_EQ(obj_1_interpolated->get_value("position")
+                        ->cst_cast<core::vec2f_t>()
+                        ->x(),
+                    0.5f);
+    ASSERT_FLOAT_EQ(obj_1_interpolated->get_value("position")
+                        ->cst_cast<core::vec2f_t>()
+                        ->y(),
+                    0.5f);
 }

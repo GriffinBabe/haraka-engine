@@ -1,20 +1,25 @@
 #include "core/game_object.hpp"
 #include <cassert>
 
-core::GameObject::GameObject(std::uint32_t id)
-    : _id(id)
+core::GameObject::GameObject(std::uint32_t id) : _id(id)
 {
-}
-
-core::GameObject::GameObject(const GameObject& obj) : _id(obj._id)
-{
-    _networked = obj._networked;
-    _values = obj._values;
 }
 
 inline bool core::GameObject::is_networked()
 {
     return _networked;
+}
+
+std::unique_ptr<core::GameObject>
+core::GameObject::interpolate(diffset_t const& differences, float interp)
+{
+    auto new_object = clone();
+    for (auto const& value : differences) {
+        auto object_value = new_object->_values[value.first];
+        auto interpolated_value = object_value->interp(value.second.get(), interp);
+        object_value->change(interpolated_value);
+    }
+    return new_object;
 }
 
 core::diffset_t core::GameObject::compare(const core::GameObject* other) const

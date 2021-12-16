@@ -11,11 +11,12 @@ namespace core {
  * std::string is the name of the variables
  * core::value_t is the delta difference.
  */
-typedef std::map<std::uint32_t,
-                 std::map<std::string, core::value_t>>
-    diffmap_t;
+typedef std::map<std::uint32_t, diffset_t> diffmap_t;
 
 typedef std::map<std::uint32_t, std::shared_ptr<GameObject>> object_map_t;
+
+// forward declaration
+class DeltaSnapshot;
 
 /**
  * A snapshot contains all game state information at a giving time.
@@ -39,6 +40,17 @@ public:
     void update(float delta_time);
 
     /**
+     * Applies a delta snapshot, creating a new (interpolated) snapshot.
+     * @param delta, the delta snapshot
+     * @param interp, interpolation time (1.0 being the maximum and 0.0 the
+     * minimum). An interpolation time of 1.0 will result in a full apply of the
+     * delta snapshot. Objects are added and removed at the 1.0 interpolation
+     * time, not before.
+     * @return a new interpolated snapshot.
+     */
+    Snapshot apply(DeltaSnapshot& delta, float interp = 1.0f);
+
+    /**
      * @return the tick number of this snapshot
      */
     std::uint32_t tick() const;
@@ -47,6 +59,14 @@ public:
      * Adds an object to the snapshot, takes the ownership of the object.
      */
     void add_object(std::shared_ptr<GameObject> object);
+
+    /**
+     * Deletes a game object from the snapshot from the game object id.
+     * @param id, the id of the game object to remove
+     * @return true if the object has been successfully removed, false
+     * otherwise.
+     */
+    bool delete_object(std::uint32_t id);
 
     /**
      * Returns the game object pointer by id. Returns nullptr if no object has
@@ -75,7 +95,7 @@ public:
      * Move constructor, as it is moved away to the heap in order to be used as
      * a pointer.
      */
-     DeltaSnapshot(DeltaSnapshot&& delta_snapshot);
+    DeltaSnapshot(DeltaSnapshot&& delta_snapshot);
 
     /**
      * Builds the _delta_values map by comparing each object of the two

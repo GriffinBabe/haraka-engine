@@ -51,6 +51,44 @@ void core::Snapshot::update(float delta_time)
     }
 }
 
+core::Snapshot core::Snapshot::apply(core::DeltaSnapshot& delta, float interp)
+{
+    Snapshot next(*this);
+    if (interp == 1.0f) {
+        // add added objects
+        for (const auto& obj : delta.added_objects()) {
+            next.add_object(obj.second);
+        }
+        // remove removed objexts
+        for (const auto& obj : delta.deleted_objects()) {
+            bool deleted = next.delete_object(obj.first);
+#ifndef NDEBUG
+            assert(deleted);
+#endif
+        }
+    }
+    for (const auto& obj : delta.delta_values()) {
+        auto object_id = obj.first;
+        auto object = get_object(object_id);
+#ifndef NDEBUG
+        assert(object != nullptr);
+#endif
+        auto new_object = object->interpolate(obj.second, interp);
+        next._objects[object_id] = std::move(new_object);
+    }
+    return next;
+}
+
+bool core::Snapshot::delete_object(std::uint32_t id)
+{
+    auto it = _objects.find(id);
+    if (it != _objects.end()) {
+        _objects.erase(it);
+        return true;
+    }
+    return false;
+}
+
 core::DeltaSnapshot::DeltaSnapshot(std::uint32_t prev_snap,
                                    std::uint32_t next_snap)
     : _prev_tick(prev_snap), _next_tick(next_snap)

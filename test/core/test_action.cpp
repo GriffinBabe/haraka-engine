@@ -12,7 +12,13 @@ public:
     {
     }
 
-    ~DummyObject() {};
+    DummyObject(DummyObject const& other)
+        : core::GameObject(other._id), _health(other._health)
+    {
+        add_values();
+    }
+
+    ~DummyObject(){};
 
     void update(float delta_time) override
     {
@@ -76,6 +82,12 @@ public:
     {
     }
 
+    UnitObject(UnitObject const& other)
+        : core::GameObject(other._id), _pos(other._pos), _team(other._team)
+    {
+        add_values();
+    }
+
     void update(float delta_time) override
     {
     }
@@ -97,7 +109,7 @@ protected:
     }
 
 public:
-    ~UnitObject() {};
+    ~UnitObject(){};
 
     core::Team const& team() const
     {
@@ -127,15 +139,18 @@ protected:
         // check if unit belongs to the same team than the player
         auto unit_obj =
             std::dynamic_pointer_cast<const UnitObject>(snap.get_object(_id));
-        if (unit_obj == nullptr) return false;
-        if (!unit_obj->team().is_same(_player.team())) return false;
+        if (unit_obj == nullptr)
+            return false;
+        if (!unit_obj->team().is_same(_player.team()))
+            return false;
 
         return true;
     }
 
     void perform_act(core::Snapshot& snap) override
     {
-        auto unit_obj = std::dynamic_pointer_cast<UnitObject>(snap.get_object(_id));
+        auto unit_obj =
+            std::dynamic_pointer_cast<UnitObject>(snap.get_object(_id));
         unit_obj->move(core::vec2i_t(0, 1));
     }
 

@@ -7,3 +7,6 @@ release/
 build/
 .idea/
 *.DS_Store
+*.pb.cc
+*.pb.h
+

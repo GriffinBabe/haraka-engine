@@ -59,3 +59,13 @@ std::uint32_t core::GameObject::id() const
 {
     return _id;
 }
+
+std::uint32_t core::GameObject::checksum() const
+{
+    boost::crc_32_type sum;
+    for (const auto& it : _values) {
+        std::uint32_t object_checksum = it.second->checksum();
+        sum.process_bytes(&object_checksum, sizeof(std::uint32_t));
+    }
+    return sum.checksum();
+}

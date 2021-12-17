@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 #include <memory>
+#include <boost/crc.hpp>
 // TODO REMOVE
 #include <iostream>
 
@@ -12,13 +13,19 @@ namespace core {
 class GameValue : public std::enable_shared_from_this<GameValue> {
 public:
     /**
+     * Returns the checksum of the object from it's value with the CRC hashing
+     * algorithm.
+     * @return
+     */
+    virtual std::uint32_t checksum() const = 0;
+
+    /**
      * Takes the values of the given GameValues and copies it to this game
      * values. This is a kind of copy assignment but supports polymorphism
      *
      * @param other
      */
     virtual void change(std::shared_ptr<GameValue>& other) = 0;
-
 
     /**
      * Computes the difference between the two GameValues and stores it in a
@@ -109,6 +116,13 @@ public:
     {
     }
 
+    uint32_t checksum() const override
+    {
+        boost::crc_32_type result;
+        result.process_bytes(&_value, sizeof(_value));
+        return result.checksum();
+    }
+
     void change(std::shared_ptr<GameValue>& other) override
     {
         auto other_casted = std::dynamic_pointer_cast<PrimitiveValue>(other);
@@ -156,6 +170,14 @@ public:
     }
 
     Vec2& operator=(Vec2 const& other) = default;
+
+    uint32_t checksum() const override
+    {
+        boost::crc_32_type result;
+        result.process_bytes(&_x, sizeof(_x));
+        result.process_bytes(&_y, sizeof(_y));
+        return result.checksum();
+    }
 
     void change(std::shared_ptr<GameValue>& other) override
     {

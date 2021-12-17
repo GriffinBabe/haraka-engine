@@ -55,7 +55,7 @@ void core::Snapshot::update(float delta_time)
 core::Snapshot core::Snapshot::apply(core::DeltaSnapshot& delta, float interp)
 {
     if (interp > 1.0f || interp < 0.0f) {
-        std::stringstream  ss;
+        std::stringstream ss;
         ss << "Cannot interpolate snapshot with delta value: " << interp << ".";
         throw core::HarakaException(ss.str());
     }
@@ -130,8 +130,9 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
             _deleted_objects[object_id] =
                 std::const_pointer_cast<GameObject>(prev_object);
         }
-        else {
-            // object still exists so we keep it
+        else if (prev_object->checksum() != next_object->checksum()) {
+            // object still exists so we keep it in delta vlaue if it has
+            // changed (different checksum)
             auto differences = prev_object->compare(next_object.get());
             _delta_values[prev_object->id()] = differences;
         }

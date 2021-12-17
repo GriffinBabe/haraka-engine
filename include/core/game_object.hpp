@@ -50,6 +50,15 @@ public:
      */
     virtual std::unique_ptr<GameObject> clone() = 0;
 
+    /**
+     * Computes the object checksum by performing exclusive or operations on
+     * each object game value checksum. This can be used to check wherever the
+     * object has changed and needs to be included in a delta snapshot.
+     *
+     * @return a std::uint32_t checksum for the object.
+     */
+    std::uint32_t checksum() const;
+
 
     /**
      * Iterates over all the mapped GameValues and get the delta values by

@@ -57,8 +57,17 @@ add_executable(
 
 target_link_libraries(test_gameinstance PUBLIC core GTest::Main)
 
+add_executable(
+        test_objects
+        core/test_objects.cpp
+)
+
+target_link_libraries(test_objects PUBLIC core GTest::Main)
+
 gtest_discover_tests(test_server)
 gtest_discover_tests(test_types)
 gtest_discover_tests(test_snapshots)
 gtest_discover_tests(test_actions)
 gtest_discover_tests(test_gameinstance)
+gtest_discover_tests(test_objects)
+

@@ -1,4 +1,5 @@
 #include "core/snapshot.hpp"
+#include "core/exception.hpp"
 #include <cassert>
 #include <sstream>
 
@@ -53,6 +54,11 @@ void core::Snapshot::update(float delta_time)
 
 core::Snapshot core::Snapshot::apply(core::DeltaSnapshot& delta, float interp)
 {
+    if (interp > 1.0f || interp < 0.0f) {
+        std::stringstream  ss;
+        ss << "Cannot interpolate snapshot with delta value: " << interp << ".";
+        throw core::HarakaException(ss.str());
+    }
     Snapshot next(*this);
     if (interp == 1.0f) {
         // add added objects

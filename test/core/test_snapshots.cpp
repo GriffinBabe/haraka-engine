@@ -1,4 +1,5 @@
 #include "core/snapshot.hpp"
+#include "core/exception.hpp"
 #include <gtest/gtest.h>
 
 class SnapshotTest : public ::testing::Test {
@@ -275,4 +276,80 @@ TEST_F(SnapshotTest, test_apply_snapshot)
                         ->cst_cast<core::vec2f_t>()
                         ->y(),
                     0.5f);
+}
+
+TEST_F(SnapshotTest, test_apply_snapshot_deleted)
+{
+    core::Snapshot snap_1(0);
+    core::Snapshot snap_2(1);
+
+    auto obj_snap_1 = std::make_shared<DummyObject>(0, 0.0f, 0.0f);
+    snap_1.add_object(obj_snap_1);
+
+    // don't add this object tot the second snap
+    core::DeltaSnapshot delta(snap_1.tick(), snap_2.tick());
+    delta.evaluate(snap_1, snap_2);
+
+    // interpolated a snapshot: beware of float precision in the interp arg
+    auto snap_interpolated = snap_1.apply(delta, 0.99f);
+
+    ASSERT_FALSE(snap_interpolated.get_object(0) == nullptr);
+
+    snap_interpolated = snap_1.apply(delta, 1.0f);
+
+    ASSERT_TRUE(snap_interpolated.get_object(0) == nullptr);
+}
+
+TEST_F(SnapshotTest, test_apply_snapshot_added)
+{
+    core::Snapshot snap_1(0);
+    core::Snapshot snap_2(snap_1);
+
+    auto obj_snap_2 = std::make_shared<DummyObject>(0, 0.0f, 0.0f);
+
+    snap_2.add_object(obj_snap_2);
+
+    // don't add this object tot the second snap
+    core::DeltaSnapshot delta(snap_1.tick(), snap_2.tick());
+    delta.evaluate(snap_1, snap_2);
+
+    // interpolated a snapshot
+    auto snap_interpolated = snap_1.apply(delta, 0.99f);
+
+    ASSERT_TRUE(snap_interpolated.get_object(0) == nullptr);
+
+    snap_interpolated = snap_1.apply(delta, 1.0f);
+
+    ASSERT_FALSE(snap_interpolated.get_object(0) == nullptr);
+
+}
+
+TEST_F(SnapshotTest, test_apply_out_of_bounds_interp)
+{
+    core::Snapshot snap_1(0);
+
+    auto obj = std::make_shared<DummyObject>(0, 0.0f, 0.0f);
+
+    snap_1.add_object(obj);
+
+    core::Snapshot snap_2(snap_1);
+
+    core::DeltaSnapshot delta(snap_1.tick(), snap_2.tick());
+    delta.evaluate(snap_1, snap_2);
+
+    try {
+        auto snap_interpolated = snap_1.apply(delta, 1.5f); // out of bounds
+        FAIL();
+    }
+    catch (core::HarakaException const& exc) {
+        SUCCEED();
+    }
+
+    try {
+        auto snap_interpolated = snap_1.apply(delta, -0.1f); // out of bounds
+        FAIL();
+    }
+    catch (core::HarakaException const& exc) {
+        SUCCEED();
+    }
 }

@@ -28,6 +28,13 @@ add_library(
 target_link_libraries(network PUBLIC util ${Boost_LIBRARIES} Threads::Threads)
 
 add_library(
+        server_lib SHARED
+        server/server_controller.cpp
+)
+
+target_link_libraries(server_lib PUBLIC util core network)
+
+add_library(
         graphics SHARED
         graphics/window.cpp
         graphics/draw_instance.cpp

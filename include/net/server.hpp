@@ -22,7 +22,7 @@ public:
     {
     }
 
-    ~ServerInterface()
+    virtual ~ServerInterface()
     {
         stop();
     }

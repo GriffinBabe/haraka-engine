@@ -1,7 +1,16 @@
 #include "core/gameinstance.hpp"
 #include "core/exception.hpp"
 
-core::GameInstance::GameInstance(core::Snapshot& snapshot,
+core::GameInstance::GameInstance()
+    : _server_side(false),
+      _tick_rate(0),
+      _base_snapshot(core::Snapshot(0)),
+      _current_snapshot(_base_snapshot)
+{
+    // unimplemented
+}
+
+core::GameInstance::GameInstance(core::Snapshot const snapshot,
                                  bool server_side,
                                  std::uint32_t tick_rate)
     : _base_snapshot(snapshot),
@@ -78,4 +87,9 @@ void core::GameInstance::_initialize()
 std::vector<core::ActionStatus> core::GameInstance::action_status_list()
 {
     return _action_status_list;
+}
+
+core::Snapshot const& core::GameInstance::current_snapshot() const
+{
+    return _current_snapshot;
 }

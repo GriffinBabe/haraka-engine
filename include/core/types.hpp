@@ -2,8 +2,6 @@
 #include <assert.h>
 #include <memory>
 #include <boost/crc.hpp>
-// TODO REMOVE
-#include <iostream>
 
 namespace core {
 

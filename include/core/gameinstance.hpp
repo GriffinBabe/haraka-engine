@@ -14,7 +14,19 @@ namespace core {
  */
 class GameInstance {
 public:
-    GameInstance(core::Snapshot& snapshot,
+
+    /**
+     * Default constructor, only useful in other class constructors.
+     */
+    GameInstance();
+
+    /**
+     * Base constructor, should be used to initialize a GameInstance.
+     * @param snapshot, base game state can be empty
+     * @param server_side, is this instance running on a server? boolean flag
+     * @param tick_rate, number of tick simulation per second
+     */
+    GameInstance(core::Snapshot const snapshot,
                  bool server_side = false,
                  std::uint32_t tick_rate = 15);
 
@@ -35,6 +47,11 @@ public:
      * @return the action status list.
      */
     [[nodiscard]] std::vector<ActionStatus> action_status_list();
+
+    /**
+     * @return the current snapshot.
+     */
+    [[nodiscard]] core::Snapshot const& current_snapshot() const;
 
 private:
     /**

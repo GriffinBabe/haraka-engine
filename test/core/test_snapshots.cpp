@@ -39,6 +39,11 @@ public:
         return _position;
     }
 
+    std::string type_name() override
+    {
+        return "DummyObject";
+    }
+
 private:
     virtual void add_values() override
     {
@@ -80,6 +85,11 @@ public:
     core::int_value_t health()
     {
         return _health;
+    }
+
+    std::string type_name()
+    {
+        return "DummyObject2";
     }
 
 private:

@@ -33,6 +33,11 @@ public:
         return std::make_unique<DummyObject>(*this);
     }
 
+    std::string type_name() override
+    {
+        return "DummyObject";
+    }
+
 protected:
     void add_values() override
     {

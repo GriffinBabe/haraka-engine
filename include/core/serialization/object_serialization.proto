@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package core.serialization;
+
+message GameObject {
+  uint32 id = 1; // Type of the object, the game must register classes with a game object type id.
+  string type_name = 2; // The in-game id of the object
+  map<string, string> values = 3; // game values
+}
+
+message Snapshot {
+  uint32 tick = 1;
+  repeated GameObject objects = 2;
+}
+
+message DeltaSnapshot {
+  uint32 prev_tick = 1;
+  uint32 next_tick = 2;
+  repeated GameObject delta_objects = 3;
+  repeated GameObject added_objects = 4;
+  repeated GameObject deleted_objects = 5;
+}

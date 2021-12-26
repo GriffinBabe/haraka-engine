@@ -1,8 +1,7 @@
 #pragma once
 #include <exception>
-#include <string>
 #include <memory>
-
+#include <string>
 
 namespace core {
 
@@ -45,10 +44,34 @@ private:
     std::uint32_t _id;
 };
 
+class UnknownClassTypeException : public core::HarakaException {
+public:
+    UnknownClassTypeException(std::string const& message,
+                              std::string const& type)
+        : core::HarakaException(message), _type(type)
+    {
+    }
+
+    [[nodiscard]] std::string type()
+    {
+        return _type;
+    }
+
+private:
+    std::string _type;
+};
+
+class UnknownClassConstructorException : public core::HarakaException {
+public:
+    UnknownClassConstructorException(std::string const& message)
+        : core::HarakaException(message)
+    {
+    }
+};
+
 class ImpossibleActionException : public core::HarakaException {
 public:
-    ImpossibleActionException(std::string const& message,
-                              GameAction& action)
+    ImpossibleActionException(std::string const& message, GameAction& action)
         : core::HarakaException(message), _action(action)
     {
     }

@@ -13,9 +13,13 @@ add_library(core SHARED
         core/types.cpp
         core/snapshot.cpp
         core/events.cpp
+        core/serialization/object_serialization.pb.cc
         )
 
-target_link_libraries(core PUBLIC util)
+target_link_libraries(core PUBLIC util ${Protobuf_LIBRARIES})
+
+# Protobuf files for GameObject serialization
+# PROTOBUF_GENERATE_CPP(${CMAKE_CURRENT_SOURCE_DIR}/core/serialization ${CMAKE_SOURCE_DIR}/include/core/serialization/ ${CMAKE_CURRENT_SOURCE_DIR}/core/serialization/object_serialization.proto)
 
 add_library(
         network SHARED

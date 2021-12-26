@@ -24,6 +24,11 @@ public:
     {
     }
 
+    std::string type_name() override
+    {
+        return "DummyObject";
+    }
+
 protected:
     void add_values() override
     {
@@ -80,6 +85,7 @@ public:
     UnitObject(std::uint32_t id, core::vec2i_t& pos, core::Team& team)
         : core::GameObject(id), _pos(pos), _team(team)
     {
+        add_values();
     }
 
     UnitObject(UnitObject const& other)
@@ -99,6 +105,11 @@ public:
     std::unique_ptr<GameObject> clone() override
     {
         return std::make_unique<UnitObject>(*this);
+    }
+
+    std::string type_name() override
+    {
+        return "UnitObject";
     }
 
 protected:

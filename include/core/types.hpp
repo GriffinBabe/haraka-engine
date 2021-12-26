@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <memory>
 #include <boost/crc.hpp>
+#include <sstream>
 
 namespace core {
 
@@ -41,6 +42,21 @@ public:
      */
     virtual std::shared_ptr<GameValue> interp(GameValue* delta,
                                               float interval) = 0;
+
+    /**
+     * Serializes the game value into a string. This will be put in a protocol
+     * buffer.
+     * @return, the serialized value in bytes.
+     */
+    virtual std::string serialize() = 0;
+
+    /**
+     * Deserializes a string into a game value. This class is obviously polymorphic
+     * and it is assumed as the right derived class object is used to parse this
+     * string.
+     * @return a shared pointer to a newly created game value.
+     */
+    virtual std::shared_ptr<GameValue> deserialize(std::string const& bytes) = 0;
 
     /**
      * Dynamically casts the game value in the specified derived GameValue
@@ -144,6 +160,21 @@ public:
         return new_value->template cast_shared<GameValue>();
     }
 
+    std::string serialize() override
+    {
+        std::stringstream ss;
+        ss.write((char*) &_value, sizeof(_value));
+        return ss.str();
+    }
+
+    std::shared_ptr<GameValue> deserialize(const std::string& bytes) override
+    {
+        std::stringstream ss(bytes);
+        auto value = std::make_shared<PrimitiveValue<T>>();
+        ss.read((char*) &(value->_value), sizeof(T));
+        return value;
+    }
+
     T get_value() const
     {
         return _value;
@@ -239,6 +270,25 @@ public:
     T y() const
     {
         return _y;
+    }
+
+    std::string serialize() override
+    {
+        std::stringstream ss;
+        ss.write((char*) &_x, sizeof(T));
+        ss.write((char*) &_y, sizeof(T));
+        return ss.str();
+    }
+
+    std::shared_ptr<GameValue> deserialize(const std::string& bytes) override
+    {
+        auto value = std::make_shared<Vec2<T>>();
+
+        std::stringstream ss(bytes);
+        ss.read((char*) &(value->_x), sizeof(T));
+        ss.read((char*) &(value->_y), sizeof(T));
+
+        return value;
     }
 
 protected:

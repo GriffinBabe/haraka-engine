@@ -44,6 +44,21 @@ protected:
                     net::Packet<HarakaPackets> packet) override;
 
 private:
+
+    void _send_delta_snapshot(core::DeltaSnapshot const& delta)
+    {
+        auto delta_buffer = delta.serialize();
+        auto delta_packet =
+            _encode_packet(&delta_buffer, HarakaPackets::DELTA_SNAPSHOT_RESULT);
+
+        message_all_clients(delta_packet);
+    }
+
+
+    void _send_action_status(std::vector<core::ActionStatus> const& actions) const;
+
+    net::Packet<HarakaPackets> _encode_packet(google::protobuf::Message* msg,
+                                              HarakaPackets type) const;
     core::GameInstance _instance;
     std::uint32_t _current_tick = 0;
 

@@ -36,6 +36,27 @@ void server::ServerController::update_tick()
     auto delta = _instance.update_tick();
     auto action_result = _instance.action_status_list();
 
-    // TODO serialize with protocol buffers
+    // send the delta snapshot to all the connected clients
+    _send_delta_snapshot(*delta);
+}
 
+void server::ServerController::_send_action_status(
+    std::vector<core::ActionStatus> const& actions) const
+{
+}
+
+net::Packet<server::HarakaPackets>
+server::ServerController::_encode_packet(google::protobuf::Message* msg,
+                                         server::HarakaPackets type) const
+{
+    net::Packet<HarakaPackets> packet;
+    packet.header.id = type;
+
+    const auto body_size = msg->ByteSizeLong();
+    packet.header.size = body_size;
+    packet.body.resize(body_size);
+
+    msg->SerializeToArray(packet.body.data(), body_size);
+
+    return packet;
 }

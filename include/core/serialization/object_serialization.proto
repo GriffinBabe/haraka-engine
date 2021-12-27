@@ -13,10 +13,14 @@ message Snapshot {
   repeated GameObject objects = 2;
 }
 
+message ValueMap {
+  map<string, string> values = 1;
+}
+
 message DeltaSnapshot {
   uint32 prev_tick = 1;
   uint32 next_tick = 2;
-  repeated GameObject delta_objects = 3;
+  map<uint32, ValueMap> delta_objects = 3;
   repeated GameObject added_objects = 4;
-  repeated GameObject deleted_objects = 5;
+  repeated uint32 deleted_objects = 5;
 }

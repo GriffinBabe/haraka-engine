@@ -24,7 +24,7 @@ public:
     {
     }
 
-    std::string type_name() override
+    std::string type_name() const override
     {
         return "DummyObject";
     }
@@ -107,7 +107,7 @@ public:
         return std::make_unique<UnitObject>(*this);
     }
 
-    std::string type_name() override
+    std::string type_name() const override
     {
         return "UnitObject";
     }

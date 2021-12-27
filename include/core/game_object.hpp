@@ -3,9 +3,9 @@
 #include "core/serialization/object_serialization.pb.h"
 #include "core/types.hpp"
 #include <map>
-#include <unordered_map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace core {
@@ -25,7 +25,6 @@ class GameObject : std::enable_shared_from_this<GameObject>,
 public:
     typedef std::unique_ptr<GameObject> (*base_creator_fn)();
     typedef std::unordered_map<std::string, base_creator_fn> registry_map;
-
 
     GameObject(std::uint32_t id);
 
@@ -66,7 +65,7 @@ public:
     /**
      * Gets the object's type name. (Same as used in the Factory)
      */
-    virtual std::string type_name() = 0;
+    virtual std::string type_name() const = 0;
 
     /**
      * Computes the object checksum by performing exclusive or operations on
@@ -105,29 +104,30 @@ public:
      * (from factory) and all the GameValues serialized.
      * @return a serialization object.
      */
-    serialization::GameObject serialize();
+    serialization::GameObject serialize() const;
 
     /**
-     * Deserializes an object, reading first the object type id (from factory) and
-     * sets the object id and its game values.
+     * Deserializes an object, reading the tick value and all the gameobject
+     * info.
      */
-    static std::unique_ptr<GameObject> deserialize(serialization::GameObject object);
+    static std::unique_ptr<GameObject>
+    deserialize(serialization::GameObject const& object);
 
     /**
      * Factory registry map, contains all the derived game objects types from
      * their name.
      */
-     static registry_map& registry();
+    static registry_map& registry();
 
-     /**
-      * Calls factory constructor and creates an object from its name.
-      *
-      * Should not be used outside the class
-      * TODO: Then maybe move to private members?
-      * @param type, the name of the GameObject
-      * @return a shared_ptr to the create GameObject
-      */
-     static std::unique_ptr<GameObject> instantiate(std::string const& type);
+    /**
+     * Calls factory constructor and creates an object from its name.
+     *
+     * Should not be used outside the class
+     * TODO: Then maybe move to private members?
+     * @param type, the name of the GameObject
+     * @return a shared_ptr to the create GameObject
+     */
+    static std::unique_ptr<GameObject> instantiate(std::string const& type);
 
 protected:
     /**
@@ -141,9 +141,7 @@ protected:
     std::uint32_t _id = 0;
 };
 
-
-struct Registrar
-{
+struct Registrar {
     Registrar(std::string name, GameObject::base_creator_fn func);
 };
 

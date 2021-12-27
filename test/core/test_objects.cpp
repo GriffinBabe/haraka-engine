@@ -43,7 +43,7 @@ public:
         return std::make_unique<DummyObject>(*this);
     }
 
-    std::string type_name() override
+    std::string type_name() const override
     {
         return "DummyObject";
     }
@@ -105,7 +105,7 @@ public:
         return std::make_unique<ComplexDummyObject>(*this);
     }
 
-    std::string type_name() override
+    std::string type_name() const override
     {
         return "ComplexDummyObject";
     }
@@ -209,4 +209,5 @@ TEST_F(ObjectTest, test_object_serialization)
     ASSERT_EQ(dummy_object->value(),
               std::dynamic_pointer_cast<DummyObject>(dummy_object_deserialized)
                   ->value());
+    ASSERT_EQ(dummy_object->checksum(), dummy_object_deserialized->checksum());
 }

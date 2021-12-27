@@ -1,5 +1,6 @@
-#include "core/snapshot.hpp"
 #include "core/exception.hpp"
+#include "core/snapshot.hpp"
+#include <google/protobuf/util/json_util.h>
 #include <gtest/gtest.h>
 
 class SnapshotTest : public ::testing::Test {
@@ -17,6 +18,10 @@ public:
         : core::GameObject(other._id), _position(other._position)
     {
         add_values();
+    }
+
+    DummyObject() : core::GameObject()
+    {
     }
 
     void update(float delta_time) override
@@ -39,9 +44,14 @@ public:
         return _position;
     }
 
-    std::string type_name() override
+    std::string type_name() const override
     {
         return "DummyObject";
+    }
+
+    static std::unique_ptr<core::GameObject> create()
+    {
+        return std::make_unique<DummyObject>();
     }
 
 private:
@@ -51,6 +61,8 @@ private:
     }
 
     core::vec2f_t _position;
+
+    static core::Registrar registrar;
 };
 
 class DummyObject2 : public core::GameObject {
@@ -65,6 +77,10 @@ public:
         : core::GameObject(other._id), _health(other._health)
     {
         add_values();
+    }
+
+    DummyObject2() : core::GameObject()
+    {
     }
 
     ~DummyObject2() = default;
@@ -87,9 +103,14 @@ public:
         return _health;
     }
 
-    std::string type_name()
+    std::string type_name() const override
     {
         return "DummyObject2";
+    }
+
+    static std::unique_ptr<core::GameObject> create()
+    {
+        return std::make_unique<DummyObject2>();
     }
 
 private:
@@ -99,7 +120,12 @@ private:
     }
 
     core::int_value_t _health;
+
+    static core::Registrar registrar;
 };
+
+core::Registrar DummyObject::registrar("DummyObject", DummyObject::create);
+core::Registrar DummyObject2::registrar("DummyObject2", DummyObject2::create);
 
 TEST_F(SnapshotTest, compare_delta)
 {
@@ -175,8 +201,6 @@ TEST_F(SnapshotTest, deleted_objects)
 
     std::uint32_t obj_1_id = 0;
     auto obj_1 = std::make_shared<DummyObject2>(obj_1_id, 10);
-    // Little cheat as obj_1 pointer is set to null once passed in the snapshot.
-    auto* obj_1_address = obj_1.get();
 
     snap_1.add_object(obj_1);
 
@@ -185,9 +209,9 @@ TEST_F(SnapshotTest, deleted_objects)
 
     auto& deleted_objects = delta_snap.deleted_objects();
 
-    auto const deleted_obj = deleted_objects.at(0);
+    auto deleted_obj_id = deleted_objects.at(0);
 
-    ASSERT_EQ(deleted_obj.get(), obj_1_address);
+    ASSERT_EQ(deleted_obj_id, obj_1->id());
 }
 
 TEST_F(SnapshotTest, added_objects)
@@ -331,7 +355,6 @@ TEST_F(SnapshotTest, test_apply_snapshot_added)
     snap_interpolated = snap_1.apply(delta, 1.0f);
 
     ASSERT_FALSE(snap_interpolated.get_object(0) == nullptr);
-
 }
 
 TEST_F(SnapshotTest, test_apply_out_of_bounds_interp)
@@ -361,5 +384,74 @@ TEST_F(SnapshotTest, test_apply_out_of_bounds_interp)
     }
     catch (core::HarakaException const& exc) {
         SUCCEED();
+    }
+}
+
+TEST_F(SnapshotTest, test_serialization)
+{
+    core::Snapshot snapshot(0);
+
+    auto obj = std::make_shared<DummyObject>(0, 1.0f, 1.0f);
+    snapshot.add_object(obj);
+
+    auto serialized_snapshot = snapshot.serialize();
+
+    std::string json;
+    google::protobuf::util::MessageToJsonString(serialized_snapshot, &json);
+    std::cout << json << std::endl;
+
+    auto deserialized_snapshot =
+        core::Snapshot::deserialize(serialized_snapshot);
+
+    ASSERT_EQ(snapshot.tick(), deserialized_snapshot.tick());
+    for (auto const& serialized_object : serialized_snapshot.objects()) {
+        auto id = serialized_object.id();
+        auto const& object_snapshot = snapshot.get_object(id);
+        auto const& object_deserialized_snapshot =
+            deserialized_snapshot.get_object(id);
+        ASSERT_EQ(object_snapshot->checksum(),
+                  object_deserialized_snapshot->checksum());
+    }
+}
+
+TEST_F(SnapshotTest, test_deltasnapshot_serialization)
+{
+    core::Snapshot snapshot_1(0);
+    core::Snapshot snapshot_2(1);
+
+    auto obj_1 = std::make_shared<DummyObject>(0, 1.0f, 1.0f);
+    auto obj_2 = std::make_shared<DummyObject>(1, 1.0f, 1.0f);
+    snapshot_1.add_object(obj_1);
+    snapshot_1.add_object(obj_2);
+
+    auto obj_3 = std::make_shared<DummyObject>(0, 1.5f, 0.5f);
+    auto obj_4 = std::make_shared<DummyObject>(2, 1.5f, 1.5f);
+    snapshot_2.add_object(obj_3);
+    snapshot_2.add_object(obj_4);
+
+    core::DeltaSnapshot delta_snapshot(0, 1);
+    delta_snapshot.evaluate(snapshot_1, snapshot_2);
+
+    auto serialized_delta = delta_snapshot.serialize();
+
+    std::string json;
+    google::protobuf::util::MessageToJsonString(serialized_delta, &json);
+    std::cout << json << std::endl;
+
+    auto deserialized_delta =
+        core::DeltaSnapshot::deserialize(serialized_delta, snapshot_1);
+
+    ASSERT_EQ(deserialized_delta.deleted_objects().at(0), obj_2->id());
+    ASSERT_EQ(deserialized_delta.added_objects().begin()->second->checksum(),
+              obj_4->checksum());
+    for (const auto& pair : delta_snapshot.delta_values()) {
+        auto object_id = pair.first;
+        for (const auto& value_pair : pair.second) {
+            auto deserialized_value =
+                deserialized_delta.delta_values().at(object_id).at(
+                    value_pair.first);
+            ASSERT_EQ(value_pair.second->checksum(),
+                      deserialized_value->checksum());
+        }
     }
 }

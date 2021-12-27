@@ -48,7 +48,7 @@ public:
      * buffer.
      * @return, the serialized value in bytes.
      */
-    virtual std::string serialize() = 0;
+    virtual std::string serialize() const = 0;
 
     /**
      * Deserializes a string into a game value. This class is obviously polymorphic
@@ -56,7 +56,7 @@ public:
      * string.
      * @return a shared pointer to a newly created game value.
      */
-    virtual std::shared_ptr<GameValue> deserialize(std::string const& bytes) = 0;
+    virtual std::shared_ptr<GameValue> deserialize(std::string const& bytes) const = 0;
 
     /**
      * Dynamically casts the game value in the specified derived GameValue
@@ -160,14 +160,14 @@ public:
         return new_value->template cast_shared<GameValue>();
     }
 
-    std::string serialize() override
+    std::string serialize() const override
     {
         std::stringstream ss;
         ss.write((char*) &_value, sizeof(_value));
         return ss.str();
     }
 
-    std::shared_ptr<GameValue> deserialize(const std::string& bytes) override
+    std::shared_ptr<GameValue> deserialize(const std::string& bytes) const override
     {
         std::stringstream ss(bytes);
         auto value = std::make_shared<PrimitiveValue<T>>();
@@ -272,7 +272,7 @@ public:
         return _y;
     }
 
-    std::string serialize() override
+    std::string serialize() const override
     {
         std::stringstream ss;
         ss.write((char*) &_x, sizeof(T));
@@ -280,7 +280,7 @@ public:
         return ss.str();
     }
 
-    std::shared_ptr<GameValue> deserialize(const std::string& bytes) override
+    std::shared_ptr<GameValue> deserialize(const std::string& bytes) const override
     {
         auto value = std::make_shared<Vec2<T>>();
 

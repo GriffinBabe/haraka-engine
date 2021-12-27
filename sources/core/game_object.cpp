@@ -71,7 +71,7 @@ std::uint32_t core::GameObject::checksum() const
     return sum.checksum();
 }
 
-core::serialization::GameObject core::GameObject::serialize()
+core::serialization::GameObject core::GameObject::serialize() const
 {
     core::serialization::GameObject serialized;
     serialized.set_id(_id);
@@ -87,12 +87,12 @@ core::serialization::GameObject core::GameObject::serialize()
 }
 
 std::unique_ptr<core::GameObject>
-core::GameObject::deserialize(core::serialization::GameObject object)
+core::GameObject::deserialize(core::serialization::GameObject const& object)
 {
     auto new_object = core::GameObject::instantiate(object.type_name());
 
     new_object->_id = object.id();
-    auto const& values_dict = *object.mutable_values();
+    auto const& values_dict = object.values();
 
     new_object->add_values();
 

@@ -66,8 +66,8 @@ core::Snapshot core::Snapshot::apply(core::DeltaSnapshot& delta, float interp)
             next.add_object(obj.second);
         }
         // remove removed objexts
-        for (const auto& obj : delta.deleted_objects()) {
-            bool deleted = next.delete_object(obj.first);
+        for (auto deleted_id : delta.deleted_objects()) {
+            bool deleted = next.delete_object(deleted_id);
 #ifndef NDEBUG
             assert(deleted);
 #endif
@@ -93,6 +93,31 @@ bool core::Snapshot::delete_object(std::uint32_t id)
         return true;
     }
     return false;
+}
+core::Snapshot
+core::Snapshot::deserialize(core::serialization::Snapshot const& object)
+{
+    Snapshot snapshot(object.tick());
+    auto const& object_dict = object.objects();
+    for (auto it = object_dict.begin(); it != object_dict.end(); it++) {
+        std::shared_ptr<GameObject> game_object =
+            core::GameObject::deserialize(*it);
+        snapshot.add_object(game_object);
+    }
+    return snapshot;
+}
+core::serialization::Snapshot core::Snapshot::serialize() const
+{
+    serialization::Snapshot snapshot;
+    snapshot.set_tick(_tick);
+    for (auto const& pair : _objects) {
+        auto serialized_object = pair.second->serialize();
+        // creates a pointer to an allocated space inside the buffer
+        auto* serialized_buffer_ptr = snapshot.add_objects();
+        // sets the element into the allocated space
+        *serialized_buffer_ptr = serialized_object;
+    }
+    return snapshot;
 }
 
 core::DeltaSnapshot::DeltaSnapshot(std::uint32_t prev_snap,
@@ -127,8 +152,7 @@ void core::DeltaSnapshot::evaluate(const core::Snapshot& prev_snap,
         if (next_object == nullptr) {
             // object has been deleted in the new snapshot so we added it in the
             // deleted objects
-            _deleted_objects[object_id] =
-                std::const_pointer_cast<GameObject>(prev_object);
+            _deleted_objects.push_back(object_id);
         }
         else if (prev_object->checksum() != next_object->checksum()) {
             // object still exists so we keep it in delta vlaue if it has
@@ -159,11 +183,90 @@ const core::diffmap_t& core::DeltaSnapshot::delta_values()
 {
     return _delta_values;
 }
-const core::object_map_t& core::DeltaSnapshot::deleted_objects()
+
+const core::id_list_t& core::DeltaSnapshot::deleted_objects()
 {
     return _deleted_objects;
 }
 const core::object_map_t& core::DeltaSnapshot::added_objects()
 {
     return _added_objects;
+}
+
+core::DeltaSnapshot core::DeltaSnapshot::deserialize(
+    const core::serialization::DeltaSnapshot& object,
+    core::Snapshot const& reference_snapshot)
+{
+    core::DeltaSnapshot delta_snapshot(object.prev_tick(), object.next_tick());
+
+    auto const& object_values_dict = object.delta_objects();
+    // iterates for each object in the diffmap
+    for (auto const& pair : object_values_dict) {
+        diffset_t value_differences;
+        auto object_id = pair.first;
+        // get the object reference, used to deserialize game values
+        auto object_reference = reference_snapshot.get_object(object_id);
+        // iterates for each object game value
+        for (auto const& value_pair : pair.second.values()) {
+            // gets the object reference value
+            auto* object_reference_value =
+                object_reference->get_value(value_pair.first);
+            // deserialize from our object reference value
+            auto deserialized_game_value =
+                object_reference_value->deserialize(value_pair.second);
+            // insert the deserialized game value in the diffset with the value
+            // name.
+            value_differences.insert(
+                {value_pair.first, deserialized_game_value});
+        }
+        delta_snapshot._delta_values.insert({object_id, value_differences});
+    }
+
+    // copies deleted object ids
+    std::copy(object.deleted_objects().begin(),
+              object.deleted_objects().end(),
+              std::back_inserter(delta_snapshot._deleted_objects));
+
+    // adds added objects
+    for (auto const& added_object : object.added_objects()) {
+        std::shared_ptr<GameObject> deserialized_object =
+            core::GameObject::deserialize(added_object);
+        delta_snapshot._added_objects.insert(
+            {deserialized_object->id(), deserialized_object});
+    }
+
+    return delta_snapshot;
+}
+
+core::serialization::DeltaSnapshot core::DeltaSnapshot::serialize() const
+{
+    serialization::DeltaSnapshot delta_snapshot;
+    delta_snapshot.set_prev_tick(_prev_tick);
+    delta_snapshot.set_next_tick(_next_tick);
+
+    // serializes delta differences
+    auto& delta_objects = *delta_snapshot.mutable_delta_objects();
+    for (auto const& delta_value_pair : _delta_values) {
+        serialization::ValueMap value_map;
+        auto* serialized_values = value_map.mutable_values();
+        for (auto const& values : delta_value_pair.second) {
+            // add to serialized_values
+            serialized_values->insert(
+                {values.first, values.second->serialize()});
+        }
+        delta_objects[delta_value_pair.first] = value_map;
+    }
+
+    // serializes added objects
+    for (auto const& object_pair : _added_objects) {
+        auto* obj_ptr = delta_snapshot.add_added_objects();
+        *obj_ptr = object_pair.second->serialize();
+    }
+
+    // serializes deleted objects
+    for (auto object_id : _deleted_objects) {
+        delta_snapshot.add_deleted_objects(object_id);
+    }
+
+    return delta_snapshot;
 }

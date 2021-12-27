@@ -1,5 +1,6 @@
 #pragma once
 #include "core/game_object.hpp"
+#include "core/serialization/object_serialization.pb.h"
 #include <map>
 
 namespace core {
@@ -14,6 +15,8 @@ namespace core {
 typedef std::map<std::uint32_t, diffset_t> diffmap_t;
 
 typedef std::map<std::uint32_t, std::shared_ptr<GameObject>> object_map_t;
+
+typedef std::vector<std::uint32_t> id_list_t;
 
 // forward declaration
 class DeltaSnapshot;
@@ -75,7 +78,25 @@ public:
      */
     std::shared_ptr<GameObject> get_object(std::uint32_t id);
 
+    /**
+     * Returns a pointer to a const game object by id. Returns nullptr if no
+     * object has been found.
+     * @return pointer to object if found, nullptr if not found.
+     */
     std::shared_ptr<const GameObject> get_object(std::uint32_t id) const;
+
+    /**
+     * Deserializes a protobuf snapshot packet, returning a parsed Snapshot.
+     * @param a protobuf snapshot packet.
+     * @return the parsed snapshot.
+     */
+    static Snapshot deserialize(serialization::Snapshot const& object);
+
+    /**
+     * Serializes the object into a protobuf snapshot packet.
+     * @return a protobuf snapshot packet.
+     */
+    serialization::Snapshot serialize() const;
 
 private:
     std::map<std::uint32_t, std::shared_ptr<GameObject>> _objects;
@@ -113,13 +134,30 @@ public:
      * Returns the evaluated list of deleted objects in the newer snapshot.
      * @return a object_map_t containing the deleted objects.
      */
-    object_map_t const& deleted_objects();
+    const id_list_t& deleted_objects();
 
     /**
      * Returns the evaluated list of added objects in the newer snapshot.
      * @return a object_map_t containing the added objects.
      */
     object_map_t const& added_objects();
+
+    /**
+     * Deserializes a protobuf snapshot packet, returning a parsed
+     * DeltaSnapshot.
+     * @param a protobuf snapshot packet.
+     * @param reference_snapshot, an unfortunate need. To deserialize, a delta
+     * snapshot needs reference to existing objects to perform value
+     * deserialization.
+     * @return the parsed DeltaSnapshot.
+     */
+    static DeltaSnapshot deserialize(serialization::DeltaSnapshot const& object, core::Snapshot const& reference_snapshot);
+
+    /**
+     * Serializes the object into a protobuf DeltaSnapshot packet.
+     * @return a protobuf DeltaSnapshot packet.
+     */
+    serialization::DeltaSnapshot serialize() const;
 
 private:
     std::uint32_t _prev_tick = 0;
@@ -128,7 +166,7 @@ private:
     /** The key is the game object id, the Gamevalue is a state change */
     diffmap_t _delta_values;
 
-    object_map_t _deleted_objects;
+    id_list_t _deleted_objects;
     object_map_t _added_objects;
 };
 

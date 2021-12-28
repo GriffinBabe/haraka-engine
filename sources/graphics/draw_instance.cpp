@@ -10,4 +10,3 @@ gfx::DrawInstance::~DrawInstance()
 {
     _object->remove_observer(this);
 }
-

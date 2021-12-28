@@ -2,6 +2,7 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
+#include <vector>
 
 /**
  * std::deque wrapper with thread safety mutex
@@ -113,8 +114,23 @@ public:
         }
     }
 
+    std::vector<T> to_vector() const
+    {
+        std::vector<T> list;
+        {
+            std::scoped_lock lock(_mutex);
+            for (auto const& elem : _queue) {
+                list.push_back(elem);
+            }
+        }
+        return list;
+    }
+
 private:
-    std::mutex _mutex;
+
+    // mutable allows modification in const functions
+    mutable std::mutex _mutex;
+
     std::deque<T> _queue;
     std::condition_variable _blocking;
     std::mutex _mutex_blocking;

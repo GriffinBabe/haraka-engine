@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package core.serialization;
+
+message Action {
+  uint32 id = 1;
+  string type_name = 2;
+  map<string, string> values = 3;
+}
+
+message ActionStatus {
+  uint32 id = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+message ActionStatusList {
+  repeated ActionStatus status = 1;
+}

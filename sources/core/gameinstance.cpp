@@ -57,11 +57,12 @@ void core::GameInstance::add_action(std::shared_ptr<core::GameAction> action)
     _action_queue.push_back(action);
 }
 
-core::ActionStatus core::GameInstance::_play_action(std::shared_ptr<core::GameAction> action,
-                                      core::Snapshot& snapshot)
+core::ActionStatus
+core::GameInstance::_play_action(std::shared_ptr<core::GameAction> action,
+                                 core::Snapshot& snapshot)
 {
     ActionStatus status;
-    status.action = action;
+    status.action_id = action->id();
 
     try {
         action->act(snapshot);
@@ -92,4 +93,9 @@ std::vector<core::ActionStatus> core::GameInstance::action_status_list()
 core::Snapshot const& core::GameInstance::current_snapshot() const
 {
     return _current_snapshot;
+}
+
+std::vector<std::shared_ptr<core::GameAction>> core::GameInstance::action_list()
+{
+    return _action_queue.to_vector();
 }

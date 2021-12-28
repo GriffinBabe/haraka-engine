@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package server.serialization;
+
+import "core/serialization/action_serialization.proto";
+import "core/serialization/object_serialization.proto";
+
+message DeltaSnapshotUpdate {
+  uint32 tick = 1;
+  core.serialization.DeltaSnapshot delta_snapshot = 2;
+  repeated core.serialization.Action actions = 3;
+  repeated core.serialization.ActionStatus status_list = 4;
+}
+
+message ConnectionResponse {
+  string username = 1;
+  string token = 2;
+}

@@ -2,6 +2,7 @@
 #include "core/game_object.hpp"
 #include "core/gameinstance.hpp"
 #include "core/types.hpp"
+#include <google/protobuf/util/json_util.h>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -60,7 +61,25 @@ public:
     {
     }
 
+    DummyAction() : core::GameAction()
+    {
+    }
+
+    static std::unique_ptr<core::GameAction> create()
+    {
+        return std::make_unique<DummyAction>();
+    }
+
 protected:
+    void add_values() override
+    {
+    }
+
+    std::string type_name() const override
+    {
+        return "DummyAction";
+    }
+
     bool check_action(const core::Snapshot& snap) override
     {
         auto obj_cast =
@@ -78,7 +97,13 @@ protected:
     {
         std::cout << "Hit" << std::endl;
     }
+
+private:
+    static core::ActionRegistrar registrar;
 };
+
+core::ActionRegistrar DummyAction::registrar("DummyAction",
+                                             DummyAction::create);
 
 class UnitObject : public core::GameObject {
 public:
@@ -135,38 +160,6 @@ public:
 private:
     core::vec2i_t _pos;
     core::Team _team;
-};
-
-class MoveUnitDownAction : public core::GameAction {
-public:
-    MoveUnitDownAction(std::uint32_t id, core::Player& player)
-        : core::GameAction(id), _player(player)
-    {
-    }
-
-protected:
-    bool check_action(const core::Snapshot& snap) override
-    {
-        // check if unit belongs to the same team than the player
-        auto unit_obj =
-            std::dynamic_pointer_cast<const UnitObject>(snap.get_object(_id));
-        if (unit_obj == nullptr)
-            return false;
-        if (!unit_obj->team().is_same(_player.team()))
-            return false;
-
-        return true;
-    }
-
-    void perform_act(core::Snapshot& snap) override
-    {
-        auto unit_obj =
-            std::dynamic_pointer_cast<UnitObject>(snap.get_object(_id));
-        unit_obj->move(core::vec2i_t(0, 1));
-    }
-
-private:
-    core::Player& _player;
 };
 
 class ActionTest : public ::testing::Test {
@@ -241,60 +234,61 @@ TEST_F(ActionTest, test_inexisting_object_action)
     ASSERT_FALSE(report_list.at(0).success);
 }
 
-TEST_F(ActionTest, test_same_team_action)
+TEST_F(ActionTest, test_serialize_action)
 {
-    core::Snapshot snapshot(0);
+    auto action = std::make_shared<DummyAction>(0);
 
-    std::uint32_t object_id = 0;
-    std::uint32_t player_id = 0;
+    auto serialized_action = action->serialize();
 
-    core::Team team(core::Team::BLUE);
+    std::string json;
+    google::protobuf::util::MessageToJsonString(serialized_action, &json);
+    std::cout << json << std::endl;
 
-    core::Player player(player_id, team);
+    auto deserialized_action = core::GameAction::deserialize(serialized_action);
 
-    core::vec2i_t pos(0, 0);
-
-    auto object = std::make_shared<UnitObject>(object_id, pos, team);
-
-    snapshot.add_object(object);
-
-    core::GameInstance instance(snapshot);
-
-    auto action = std::make_shared<MoveUnitDownAction>(object_id, player);
-
-    instance.add_action(action);
-    instance.update_tick();
-
-    auto report_list = instance.action_status_list();
-
-    ASSERT_TRUE(report_list.at(0).success);
+    ASSERT_EQ(action->id(), deserialized_action->id());
 }
 
-TEST_F(ActionTest, test_wrong_team_action)
+TEST_F(ActionTest, test_serialize_action_status)
 {
     core::Snapshot snapshot(0);
 
-    std::uint32_t object_id = 0;
-    std::uint32_t player_id = 0;
-
-    core::Team team(core::Team::BLUE);
-    core::Team enemy(core::Team::RED);
-
-    core::Player player(player_id, team);
-    core::vec2i_t pos(0, 0);
-
-    auto object = std::make_shared<UnitObject>(object_id, pos, enemy);
-
+    auto object = std::make_shared<DummyObject>(0, 10);
     snapshot.add_object(object);
 
     core::GameInstance instance(snapshot);
 
-    auto action = std::make_shared<MoveUnitDownAction>(object_id, player);
+    auto action_1 = std::make_shared<DummyAction>(0);
+    auto action_2 = std::make_shared<DummyAction>(1); // invalid action
 
-    instance.add_action(action);
+    instance.add_action(action_1);
+    instance.add_action(action_2);
+
     instance.update_tick();
 
-    auto report_list = instance.action_status_list();
+    auto action_status_list = instance.action_status_list();
 
-    ASSERT_FALSE(report_list.at(0).success);
+    ASSERT_EQ(action_status_list.at(0).action_id, 0);
+    ASSERT_TRUE(action_status_list.at(0).success);
+    ASSERT_EQ(action_status_list.at(0).message, "");
+
+    ASSERT_EQ(action_status_list.at(1).action_id, 1);
+    ASSERT_FALSE(action_status_list.at(1).success);
+
+    auto serialized_status_list =
+        core::serialize_action_status_list(action_status_list);
+
+    std::string json;
+    google::protobuf::util::MessageToJsonString(serialized_status_list, &json);
+    std::cout << json << std::endl;
+
+    auto deserialized_status_list =
+        core::deserialize_action_status_list(serialized_status_list);
+
+    ASSERT_EQ(deserialized_status_list.at(0).action_id, 0);
+    ASSERT_TRUE(deserialized_status_list.at(0).success);
+    ASSERT_EQ(deserialized_status_list.at(0).message, "");
+
+    ASSERT_EQ(deserialized_status_list.at(1).action_id, 1);
+    ASSERT_FALSE(deserialized_status_list.at(1).success);
 }

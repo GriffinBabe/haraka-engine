@@ -14,6 +14,7 @@ add_library(core SHARED
         core/snapshot.cpp
         core/events.cpp
         core/serialization/object_serialization.pb.cc
+        core/serialization/action_serialization.pb.cc
         )
 
 target_link_libraries(core PUBLIC util ${Protobuf_LIBRARIES})
@@ -33,6 +34,7 @@ target_link_libraries(network PUBLIC util ${Boost_LIBRARIES} Threads::Threads)
 
 add_library(
         server_lib SHARED
+        server/session_info.cpp
         server/server_controller.cpp
 )
 

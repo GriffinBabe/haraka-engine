@@ -38,6 +38,11 @@ public:
     void add_action(std::shared_ptr<core::GameAction> action);
 
     /**
+     * Makes a copy of the action queue in a vector and returns it.
+     */
+    std::vector<std::shared_ptr<core::GameAction>> action_list();
+
+    /**
      * Simulates the next snapshot from the current snapshot.
      * @return A pointer to a delta snapshot. Will be used over the network.
      */

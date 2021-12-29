@@ -43,6 +43,13 @@ add_library(
 target_link_libraries(server_lib PUBLIC util core network)
 
 add_library(
+        client_lib SHARED
+        client/client_controller.cpp
+)
+
+target_link_libraries(client_lib PUBLIC util core network server_lib)
+
+add_library(
         graphics SHARED
         graphics/window.cpp
         graphics/draw_instance.cpp

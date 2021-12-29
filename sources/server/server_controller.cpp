@@ -16,6 +16,9 @@ server::ServerController::ServerController(std::uint32_t tick_rate,
 bool server::ServerController::on_client_connect(
     std::shared_ptr<net::TCPSession<HarakaPackets>> client)
 {
+    // the server created a TCPSession but here we don't create a session log
+    // until the client hasn't given credentials
+
     // ask for connection information (username, token)
     net::Packet<HarakaPackets> packet;
     packet.header.id = HarakaPackets::CONNECTION;
@@ -28,22 +31,42 @@ bool server::ServerController::on_client_connect(
 void server::ServerController::on_client_disconnect(
     std::shared_ptr<net::TCPSession<HarakaPackets>> client)
 {
-    // changes player info
+    // checks if there is a session info attached to this client session
+    auto it = std::find_if(
+        _session_info.begin(), _session_info.end(), [&](const auto& val) {
+            return val.session().get() == client.get();
+        });
+    // disconnect this session if found
+    if (it != _session_info.end()) {
+        it->disconnect();
+    }
 }
 
 void server::ServerController::on_message(
     std::shared_ptr<net::TCPSession<HarakaPackets>> client,
     net::Packet<server::HarakaPackets> packet)
 {
-    switch(packet.header.id) {
-    case CONNECTION_RESULT:
-        break;
-    case DISCONNECTION:
-        break;
-    case FULL_SNAPSHOT:
-        break;
-    case ACTION:
-        break;
+    // first check if there is a session info attached to this client
+    auto it = std::find_if(
+        _session_info.begin(), _session_info.end(), [&](const auto& val) {
+            return val.session().get() == client.get();
+        });
+
+    // if there is no session found and that is a connection packet
+    if (it == _session_info.end()
+        && packet.header.id == HarakaPackets::CONNECTION) {
+        _parse_connection_result(client, packet);
+    }
+    // if there is a session and it is logged
+    else if (it->logged()) {
+        switch (packet.header.id) {
+        case DISCONNECTION:
+            break;
+        case FULL_SNAPSHOT:
+            break;
+        case ACTION:
+            break;
+        }
     }
 }
 
@@ -77,6 +100,7 @@ server::ServerController::_encode_packet(google::protobuf::Message* msg,
 
     return packet;
 }
+
 void server::ServerController::_send_delta_update(
     const core::DeltaSnapshot& delta,
     const std::vector<core::ActionStatus>& status_list,
@@ -104,5 +128,39 @@ void server::ServerController::_send_delta_update(
     auto packet = _encode_packet(&delta_buffer, server::DELTA_SNAPSHOT_RESULT);
 
     // sends the packet
-    _message_all_clients(packet);
+    message_all_clients(packet);
+}
+
+void server::ServerController::_parse_connection_result(
+    std::shared_ptr<net::TCPSession<HarakaPackets>> client,
+    net::Packet<HarakaPackets>& connection_result)
+{
+    // TODO check if session doesn't already exists
+    SessionInfo info(client);
+
+    auto connection_buffer =
+        _decode_packet<serialization::ConnectionResponse>(connection_result);
+
+    auto logged =
+        info.log(connection_buffer.username(), connection_buffer.token());
+
+    if (logged) {
+        net::Packet<HarakaPackets> accepted_packet;
+
+        accepted_packet.header.id = HarakaPackets::CONNECTION_CONFIRMED;
+        accepted_packet.header.size = 0;
+
+        message_client(client, accepted_packet);
+
+        _session_info.push_back(info);
+    }
+    else {
+        info.disconnect();
+
+        net::Packet<HarakaPackets> denied_packet;
+        denied_packet.header.id = HarakaPackets::CONNECTION_DENIED;
+        denied_packet.header.size = 0;
+
+        message_client(client, denied_packet);
+    }
 }

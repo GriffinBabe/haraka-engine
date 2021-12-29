@@ -2,20 +2,10 @@
 
 #include "core/gameinstance.hpp"
 #include "net/server.hpp"
+#include "server/session_info.hpp"
 #include "server/serialization/server_serialization.pb.h"
 
 namespace server {
-
-enum HarakaPackets : std::uint32_t {
-    CONNECTION = 0,            // sent by server upon connection
-    CONNECTION_RESULT = 1,     // response from user after connection packet
-    DISCONNECTION = 2,         // sent when user is leaving
-    FULL_SNAPSHOT = 3,         // user requesting a full snapshot update
-    FULL_SNAPSHOT_RESULT = 4,  // response containing full snapshot update
-    DELTA_SNAPSHOT_RESULT = 5, // sent by server at each new tick
-    ACTION = 6, // sent by user when making an action (changing direction,
-                // firing, spells)
-};
 
 /**
  * Server controller contains the game instance. It controls the game state with
@@ -41,24 +31,30 @@ protected:
 
 private:
 
-    // boilerplate redefinition to avoid template problems
+    /**
+     * Messages all the logged clients by checking the session info.
+     * @param packet, the packet to send to each logged client.
+     * @param exclude, a session that we eventually would like to exclude.
+     */
     void _message_all_clients(
         net::Packet<HarakaPackets> const& packet,
         std::shared_ptr<net::TCPSession<HarakaPackets>> exclude = nullptr)
     {
-        message_all_clients(packet, std::move(exclude));
-    }
-
-    // boilerplate redefinition to avoid template problems
-    void _message_client(std::shared_ptr<net::TCPSession<HarakaPackets>> client,
-                         net::Packet<HarakaPackets> const& packet)
-    {
-        message_client(std::move(client), packet);
+        for (auto& session_info : _session_info) {
+            if (session_info.logged()) {
+                message_client(session_info.session(), packet);
+            }
+        }
     }
 
     void _parse_action_packet(net::Packet<HarakaPackets>& action_packet);
 
-    void _parse_connection_result(net::Packet<HarakaPackets>& connection_result);
+    /**
+     * Parses a connection result (containing credential information) check the
+     * credentials and adds it to the Session info map.
+     * @param connection_result
+     */
+    void _parse_connection_result(std::shared_ptr<net::TCPSession<HarakaPackets>> client, net::Packet<HarakaPackets>& connection_result);
 
     /**
      * Sends a delta update to all the clients. This contains all the
@@ -101,7 +97,13 @@ private:
         return buffer;
     }
 
+    /**
+     * Reference to GameInstance, containing the game state and snapshots
+     */
     core::GameInstance _instance;
+
+    // TODO create TSVector instead for thread safety
+    std::vector<SessionInfo> _session_info;
 
     std::uint32_t _current_tick = 0;
     const std::uint32_t _tick_rate = 15;

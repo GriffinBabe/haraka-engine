@@ -34,6 +34,8 @@ target_link_libraries(network PUBLIC util ${Boost_LIBRARIES} Threads::Threads)
 
 add_library(
         server_lib SHARED
+        server/serialization/server_serialization.pb.cc
+        server/packet_types.cpp
         server/session_info.cpp
         server/server_controller.cpp
 )

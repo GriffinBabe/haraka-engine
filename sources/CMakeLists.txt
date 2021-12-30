@@ -32,22 +32,22 @@ add_library(
 
 target_link_libraries(network PUBLIC util ${Boost_LIBRARIES} Threads::Threads)
 
-add_library(
-        server_lib SHARED
-        server/serialization/server_serialization.pb.cc
-        server/packet_types.cpp
-        server/session_info.cpp
-        server/server_controller.cpp
-)
-
-target_link_libraries(server_lib PUBLIC util core network)
-
-add_library(
-        client_lib SHARED
-        client/client_controller.cpp
-)
-
-target_link_libraries(client_lib PUBLIC util core network server_lib)
+#add_library(
+#        server_lib SHARED
+#        server/serialization/server_serialization.pb.cc
+#        server/packet_types.cpp
+#        server/session_info.cpp
+#        server/server_controller.cpp
+#)
+#
+#target_link_libraries(server_lib PUBLIC util core network)
+#
+#add_library(
+#        client_lib SHARED
+#        client/client_controller.cpp
+#)
+#
+#target_link_libraries(client_lib PUBLIC util core network server_lib)
 
 add_library(
         graphics SHARED

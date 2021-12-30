@@ -33,8 +33,12 @@ void server::ServerController::on_client_disconnect(
 {
     // checks if there is a session info attached to this client session
     auto it = std::find_if(
-        _session_info.begin(), _session_info.end(), [&](const auto& val) {
-            return val.session().get() == client.get();
+        _session_info.begin(), _session_info.end(), [&](auto& val) {
+            return std::const_pointer_cast<
+                       std::shared_ptr<net::TCPSession<HarakaPackets>>>(
+                       val.session())
+                       .get()
+                   == client.get();
         });
     // disconnect this session if found
     if (it != _session_info.end()) {
@@ -49,7 +53,11 @@ void server::ServerController::on_message(
     // first check if there is a session info attached to this client
     auto it = std::find_if(
         _session_info.begin(), _session_info.end(), [&](const auto& val) {
-            return val.session().get() == client.get();
+          return std::const_pointer_cast<
+              std::shared_ptr<net::TCPSession<HarakaPackets>>>(
+              val.session())
+                     .get()
+                 == client.get();
         });
 
     // if there is no session found and that is a connection packet

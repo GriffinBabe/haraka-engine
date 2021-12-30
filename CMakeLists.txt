@@ -29,6 +29,8 @@ if (${Protobuf_FOUND})
 else ()
     message(FATAL_ERROR "Couldn't find protobuf")
 endif ()
+set(Protobuf_INCLUDE_DIRS include)
+set(Protobuf_IMPORT_DIRS include)
 
 find_package(SDL2)
 if (${SDL2_FOUND})
